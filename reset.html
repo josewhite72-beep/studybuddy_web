@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Reset StudyBuddy</title>
+<style>
+  body { font-family: sans-serif; display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:100vh; margin:0; background:#4F46E5; color:#fff; gap:14px; padding:24px; text-align:center; }
+  h1  { font-size:26px; margin:0; }
+  p   { font-size:14px; opacity:.8; margin:0; max-width:300px; line-height:1.5; }
+  .card { background:rgba(255,255,255,.12); border-radius:16px; padding:16px 20px; width:100%; max-width:340px; text-align:left; }
+  .key  { font-size:12px; font-family:monospace; background:rgba(0,0,0,.25); border-radius:6px; padding:4px 8px; margin:4px 0; display:block; }
+  button { background:#fff; color:#4F46E5; border:none; border-radius:12px; padding:16px 32px; font-size:17px; font-weight:800; cursor:pointer; width:100%; max-width:340px; }
+  .ok { background:#10B981; border-radius:12px; padding:14px 20px; font-size:15px; font-weight:700; display:none; width:100%; max-width:340px; box-sizing:border-box; }
+  .skip { color:rgba(255,255,255,.6); font-size:13px; font-weight:600; cursor:pointer; text-decoration:underline; }
+</style>
+</head>
+<body>
+  <div style="font-size:52px">🦜</div>
+  <h1>StudyBuddy Reset</h1>
+  <p>Borra solo la sesión de StudyBuddy. No toca datos de otras apps.</p>
+
+  <div class="card">
+    <div style="font-size:12px;font-weight:700;opacity:.7;margin-bottom:6px">CLAVES A BORRAR:</div>
+    <div id="keys-list">Analizando...</div>
+  </div>
+
+  <button onclick="doReset()">🗑 Limpiar sesión StudyBuddy</button>
+  <div class="ok" id="ok">✅ Listo — redirigiendo al login...</div>
+  <span class="skip" onclick="window.location.href='./index.html'">Saltar → ir a la app directamente</span>
+
+<script>
+const SB_KEYS = [
+  'sb_eng_session',
+  'sb_eng_teacher',
+  'sb_eng_cloud_progress',
+  'sb_sync_queue',
+  'sb_progress_v2',
+  'sb_lang',
+]
+
+function previewKeys() {
+  const found = SB_KEYS.filter(k => localStorage.getItem(k) !== null)
+  document.getElementById('keys-list').innerHTML = found.length
+    ? found.map(k => `<span class="key">✓ ${k}</span>`).join('')
+    : '<span style="opacity:.6;font-size:12px">No hay sesión guardada</span>'
+}
+
+function doReset() {
+  SB_KEYS.forEach(k => localStorage.removeItem(k))
+  document.getElementById('ok').style.display = 'block'
+  document.querySelector('button').style.display = 'none'
+  setTimeout(() => { window.location.href = './index.html' }, 1800)
+}
+
+previewKeys()
+</script>
+</body>
+</html>
