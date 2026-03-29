@@ -3,7 +3,7 @@
    Versiona el caché para forzar actualización automática
    ============================================================ */
 
-const CACHE_VERSION = 'sb-v1.3'
+const CACHE_VERSION = 'sb-v2'
 const CACHE_NAME = `studybuddy-${CACHE_VERSION}`
 
 const PRECACHE_URLS = [
