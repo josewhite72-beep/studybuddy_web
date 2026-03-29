@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Fix SW</title>
+<style>
+  body { font-family:sans-serif; background:#1e1b4b; color:#fff; display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:100vh; margin:0; padding:24px; text-align:center; gap:16px; }
+  h2  { font-size:24px; margin:0; }
+  pre { background:rgba(255,255,255,.1); padding:16px; border-radius:12px; font-size:12px; text-align:left; width:100%; max-width:360px; white-space:pre-wrap; word-break:break-all; }
+  .btn { width:100%; max-width:360px; padding:16px; border:none; border-radius:12px; font-size:16px; font-weight:800; cursor:pointer; }
+  .red   { background:#EF4444; color:#fff; }
+  .green { background:#10B981; color:#fff; }
+  .gray  { background:rgba(255,255,255,.2); color:#fff; }
+</style>
+</head>
+<body>
+<div style="font-size:48px">🦜</div>
+<h2>StudyBuddy SW Fix</h2>
+<pre id="log">Iniciando...</pre>
+<button class="btn red"   id="btn-fix"  onclick="fixSW()">💣 Desregistrar SW de studybuddy_web</button>
+<button class="btn green" id="btn-go"   onclick="goApp()" style="display:none">🚀 Ir a la app</button>
+<button class="btn gray"  onclick="diagnose()">🔍 Diagnóstico</button>
+
+<script>
+const log = t => {
+  document.getElementById('log').textContent += '\n' + t
+  console.log(t)
+}
+
+async function diagnose() {
+  document.getElementById('log').textContent = ''
+  if (!('serviceWorker' in navigator)) { log('SW no soportado'); return }
+  const regs = await navigator.serviceWorker.getRegistrations()
+  log(`SWs registrados: ${regs.length}`)
+  regs.forEach(r => log(`  • ${r.scope}\n    estado: ${r.active?.state || 'none'}`))
+  const cacheKeys = await caches.keys()
+  log(`\nCachés: ${cacheKeys.length}`)
+  cacheKeys.forEach(k => log(`  • ${k}`))
+}
+
+async function fixSW() {
+  document.getElementById('log').textContent = 'Trabajando...'
+  document.getElementById('btn-fix').disabled = true
+
+  if (!('serviceWorker' in navigator)) {
+    log('SW no soportado en este navegador')
+    return
+  }
+
+  try {
+    // Unregister ONLY studybuddy_web SW
+    const regs = await navigator.serviceWorker.getRegistrations()
+    let found = 0
+    for (const reg of regs) {
+      if (reg.scope.includes('studybuddy_web')) {
+        const ok = await reg.unregister()
+        log(ok ? `✅ SW desregistrado: ${reg.scope}` : `❌ Falló: ${reg.scope}`)
+        found++
+      }
+    }
+    if (found === 0) log('ℹ️ No se encontró SW de studybuddy_web')
+
+    // Delete only studybuddy caches
+    const keys = await caches.keys()
+    for (const k of keys) {
+      if (k.startsWith('studybuddy')) {
+        await caches.delete(k)
+        log(`✅ Caché eliminado: ${k}`)
+      }
+    }
+
+    // Clear only StudyBuddy localStorage keys
+    const SB_KEYS = ['sb_eng_session','sb_eng_teacher','sb_eng_cloud_progress','sb_sync_queue','sb_progress_v2','sb_lang']
+    SB_KEYS.forEach(k => {
+      if (localStorage.getItem(k)) {
+        localStorage.removeItem(k)
+        log(`✅ Key eliminada: ${k}`)
+      }
+    })
+
+    log('\n✅ ¡Listo! Toca "Ir a la app"')
+    document.getElementById('btn-go').style.display = 'block'
+
+  } catch(e) {
+    log('❌ Error: ' + e.message)
+  }
+}
+
+function goApp() {
+  window.location.href = './index.html?v=' + Date.now()
+}
+
+diagnose()
+</script>
+</body>
+</html>
