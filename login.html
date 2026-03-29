@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>StudyBuddy English</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Nunito', sans-serif;
+  background: linear-gradient(145deg, #4F46E5, #9333EA);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  padding: 24px;
+  gap: 16px;
+  text-align: center;
+}
+.logo { font-size: 64px; }
+h1 { font-size: 28px; font-weight: 800; }
+p  { font-size: 14px; opacity: .8; }
+.card {
+  background: #fff;
+  border-radius: 20px;
+  padding: 28px 24px;
+  width: 100%;
+  max-width: 360px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+input {
+  width: 100%;
+  padding: 14px 16px;
+  border: 2px solid #E5E7EB;
+  border-radius: 10px;
+  font-size: 18px;
+  font-weight: 700;
+  outline: none;
+  font-family: inherit;
+  color: #1F2937;
+}
+input:focus { border-color: #4F46E5; }
+button {
+  width: 100%;
+  padding: 14px;
+  background: linear-gradient(135deg, #4F46E5, #9333EA);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-size: 16px;
+  font-weight: 800;
+  cursor: pointer;
+  font-family: inherit;
+}
+.err { color: #EF4444; font-size: 13px; font-weight: 700; display: none; }
+.label { font-size: 12px; font-weight: 800; color: #6B7280; text-transform: uppercase; letter-spacing: .05em; text-align: left; }
+.guest { color: #9CA3AF; font-size: 13px; font-weight: 700; cursor: pointer; background: none; border: none; font-family: inherit; }
+#step2 { display: none; flex-direction: column; gap: 12px; }
+.back { color: #4F46E5; font-size: 13px; font-weight: 700; cursor: pointer; background: none; border: none; text-align: left; font-family: inherit; }
+</style>
+</head>
+<body>
+
+<div class="logo">🦜</div>
+<h1>StudyBuddy English</h1>
+<p>PreK — Grade 12 · Panama 🇵🇦</p>
+
+<div class="card">
+  <!-- Step 1: username -->
+  <div id="step1">
+    <div class="label">Usuario / Username</div>
+    <input id="usr" type="text" placeholder="tu.usuario" autocapitalize="none" autocorrect="off" autocomplete="off"/>
+    <div class="err" id="err1">⚠ Ingresa tu usuario</div>
+    <button onclick="step1()">Continuar →</button>
+    <button class="guest" onclick="guest()">Continuar sin cuenta</button>
+  </div>
+
+  <!-- Step 2: PIN -->
+  <div id="step2">
+    <button class="back" onclick="back()">← Volver</button>
+    <div class="label">PIN</div>
+    <input id="pin" type="password" placeholder="••••••" autocomplete="off"/>
+    <div class="err" id="err2">⚠ PIN incorrecto</div>
+    <button id="btnLogin" onclick="login()">🚀 Entrar</button>
+  </div>
+</div>
+
+<script>
+const SB_URL = 'https://lsgnffjoqcbhjrleayvu.supabase.co'
+const SB_KEY = 'sb_publishable_cWKJQXNUUArLj6eQ2DBpWw_vsBvWTm6'
+
+async function rpc(fn, params) {
+  try {
+    const r = await fetch(`${SB_URL}/rest/v1/rpc/${fn}`, {
+      method: 'POST',
+      headers: { 'apikey': SB_KEY, 'Authorization': `Bearer ${SB_KEY}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify(params),
+      signal: AbortSignal.timeout(8000)
+    })
+    return await r.json()
+  } catch(e) { return { success: false, error: 'Sin conexión' } }
+}
+
+function step1() {
+  const u = document.getElementById('usr').value.trim()
+  if (!u) { show('err1'); return }
+  hide('err1')
+  document.getElementById('step1').style.display = 'none'
+  const s2 = document.getElementById('step2')
+  s2.style.display = 'flex'
+  document.getElementById('pin').focus()
+}
+
+function back() {
+  document.getElementById('step2').style.display = 'none'
+  document.getElementById('step1').style.display = 'block'
+  document.getElementById('pin').value = ''
+  hide('err2')
+}
+
+async function login() {
+  const u   = document.getElementById('usr').value.trim()
+  const p   = document.getElementById('pin').value.trim()
+  const btn = document.getElementById('btnLogin')
+  if (p.length < 3) { show('err2'); return }
+  hide('err2')
+  btn.textContent = '⏳ Entrando...'
+  btn.disabled = true
+
+  // Try teacher first
+  let r = await rpc('sb_teacher_login', { p_username: u, p_pin: p })
+  if (r.success && r.role === 'teacher') {
+    localStorage.setItem('sb_eng_teacher', JSON.stringify(r.data))
+    window.location.href = './index.html'
+    return
+  }
+
+  // Try student
+  r = await rpc('sb_student_login', { p_username: u, p_pin: p })
+  btn.disabled = false
+  btn.textContent = '🚀 Entrar'
+
+  if (!r.success) {
+    document.getElementById('err2').textContent = '⚠ ' + (r.error || 'Usuario o PIN incorrecto')
+    show('err2')
+    document.getElementById('pin').value = ''
+    return
+  }
+
+  localStorage.setItem('sb_eng_session', JSON.stringify(r.data))
+  window.location.href = './index.html'
+}
+
+function guest() {
+  localStorage.setItem('sb_eng_session', JSON.stringify({ id: 'guest_' + Date.now(), name: 'Guest', guest: true, assigned_grade: '4' }))
+  window.location.href = './index.html'
+}
+
+function show(id) { document.getElementById(id).style.display = 'block' }
+function hide(id) { document.getElementById(id).style.display = 'none'  }
+
+// Enter key support
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter') {
+    if (document.getElementById('step1').style.display !== 'none') step1()
+    else login()
+  }
+})
+</script>
+</body>
+</html>
