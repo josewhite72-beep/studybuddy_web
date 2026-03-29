@@ -1,0 +1,2280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<meta name="theme-color" content="#4F46E5"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<link rel="manifest" href="manifest.json"/>
+<title>StudyBuddy English</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Baloo+2:wght@700;800;900&display=swap" rel="stylesheet"/>
+<style>
+/* ── DESIGN TOKENS ─────────────────────────────────────────── */
+:root {
+  --fd: 'Baloo 2', cursive;
+  --fb: 'Nunito', sans-serif;
+
+  /* Neutral */
+  --white: #FFFFFF;
+  --gray-50: #F9FAFB;
+  --gray-100: #F3F4F6;
+  --gray-200: #E5E7EB;
+  --gray-400: #9CA3AF;
+  --gray-600: #4B5563;
+  --gray-800: #1F2937;
+
+  /* Grade palettes */
+  --prek-1: #F59E0B; --prek-2: #D97706; --prek-light: #FEF3C7;
+  --k-1: #F97316;    --k-2: #EA580C;    --k-light: #FFEDD5;
+  --g1-1: #10B981;   --g1-2: #059669;   --g1-light: #D1FAE5;
+  --g2-1: #06B6D4;   --g2-2: #0891B2;   --g2-light: #CFFAFE;
+  --g3-1: #3B82F6;   --g3-2: #2563EB;   --g3-light: #DBEAFE;
+  --g4-1: #4F46E5;   --g4-2: #4338CA;   --g4-light: #E0E7FF;
+  --g5-1: #7C3AED;   --g5-2: #6D28D9;   --g5-light: #EDE9FE;
+  --g6-1: #9333EA;   --g6-2: #7E22CE;   --g6-light: #F3E8FF;
+  --g7-1: #EC4899;   --g7-2: #DB2777;   --g7-light: #FCE7F3;
+  --g8-1: #EF4444;   --g8-2: #DC2626;   --g8-light: #FEE2E2;
+  --g9-1: #F97316;   --g9-2: #EA580C;   --g9-light: #FFEDD5;
+  --g10-1:#D97706;  --g10-2:#B45309;   --g10-light:#FEF3C7;
+  --g11-1:#0D9488;  --g11-2:#0F766E;   --g11-light:#CCFBF1;
+  --g12-1:#1D4ED8;  --g12-2:#1E3A8A;   --g12-light:#DBEAFE;
+
+  /* UI */
+  --accent: #4F46E5;
+  --accent-dark: #3730A3;
+  --green: #10B981;
+  --green-dark: #059669;
+  --green-light: #D1FAE5;
+  --amber: #F59E0B;
+  --red: #EF4444;
+  --red-light: #FEE2E2;
+
+  /* Radii & shadows */
+  --rsm: 8px; --rmd: 14px; --rlg: 20px; --rxl: 28px;
+  --ssm: 0 2px 8px rgba(0,0,0,.08);
+  --smd: 0 4px 16px rgba(0,0,0,.12);
+  --slg: 0 8px 32px rgba(0,0,0,.16);
+}
+
+*,*::before,*::after { box-sizing: border-box; margin: 0; padding: 0; }
+html,body { height: 100%; font-family: var(--fb); background: var(--gray-50); color: var(--gray-800); -webkit-tap-highlight-color: transparent; overscroll-behavior: none; }
+button { font-family: var(--fb); cursor: pointer; border: none; background: none; }
+input, textarea, select { font-family: var(--fb); }
+
+/* ── ANIMATIONS ─────────────────────────────────────────────── */
+@keyframes fadeUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+@keyframes pop    { 0%{transform:scale(.8);opacity:0} 70%{transform:scale(1.05)} 100%{transform:scale(1);opacity:1} }
+@keyframes bounce { from{transform:translateY(0)} to{transform:translateY(-10px)} }
+@keyframes pulse  { 0%,100%{opacity:1} 50%{opacity:.6} }
+@keyframes shimmer{ 0%{background-position:-200% center} 100%{background-position:200% center} }
+
+/* ── VIEWS ───────────────────────────────────────────────────── */
+.view { display:none; flex-direction:column; min-height:100vh; }
+.view.active { display:flex; }
+
+/* ── LOADING ─────────────────────────────────────────────────── */
+.loading-overlay { position:fixed;inset:0;background:rgba(255,255,255,.9);display:none;flex-direction:column;align-items:center;justify-content:center;gap:16px;z-index:9999; }
+.loading-overlay.show { display:flex; }
+.loader { font-size:44px;animation:bounce .8s infinite alternate; }
+.loading-text { font-size:16px;font-weight:700;color:var(--gray-600); }
+
+/* ── SPLASH ──────────────────────────────────────────────────── */
+#view-splash { align-items:center;justify-content:center;background:linear-gradient(145deg,#4F46E5,#9333EA); }
+.splash-logo { font-size:80px;animation:bounce 1s infinite alternate; }
+.splash-title { font-family:var(--fd);font-size:38px;color:#fff;font-weight:800;margin-top:14px; }
+.splash-sub { color:rgba(255,255,255,.7);font-size:15px;margin-top:6px; }
+
+/* ── HOME / GRADE SELECTOR ───────────────────────────────────── */
+#view-home { background:var(--gray-50); }
+.home-header { background:linear-gradient(135deg,#4F46E5,#9333EA);padding:28px 20px 24px;text-align:center; }
+.home-logo { font-size:42px; }
+.home-title { font-family:var(--fd);font-size:28px;font-weight:800;color:#fff;line-height:1.1;margin-top:6px; }
+.home-sub { font-size:13px;color:rgba(255,255,255,.8);margin-top:4px; }
+.home-body { flex:1;padding:20px 16px 40px;overflow-y:auto; }
+.home-section { font-family:var(--fd);font-size:18px;font-weight:800;color:var(--gray-800);margin-bottom:14px; }
+.grade-grid { display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:24px; }
+.grade-card { border-radius:var(--rlg);padding:18px 14px;cursor:pointer;border:none;text-align:left;transition:transform .15s,box-shadow .15s;box-shadow:var(--ssm); }
+.grade-card:active { transform:scale(.97); }
+.grade-card.wide { grid-column:1/-1; }
+.gc-emoji { font-size:28px;margin-bottom:6px; }
+.gc-grade { font-family:var(--fd);font-size:17px;font-weight:800;line-height:1.1; }
+.gc-level { font-size:11px;font-weight:700;opacity:.75;margin-top:2px;text-transform:uppercase;letter-spacing:.04em; }
+.gc-scenarios { font-size:11px;font-weight:600;margin-top:4px;opacity:.7; }
+
+/* ── GRADE DASHBOARD ──────────────────────────────────────────── */
+#view-grade { background:var(--gray-50); }
+.grade-header { padding:20px;display:flex;align-items:center;gap:12px;box-shadow:var(--smd);flex-shrink:0; }
+.btn-back-home { font-size:22px;background:rgba(255,255,255,.25);border-radius:10px;padding:4px 10px;color:#fff;font-weight:700; }
+.grade-header-info { flex:1; }
+.grade-header-title { font-family:var(--fd);font-size:20px;font-weight:800;color:#fff;line-height:1.1; }
+.grade-header-sub { font-size:12px;color:rgba(255,255,255,.75);font-weight:600;margin-top:2px; }
+.grade-body { flex:1;padding:20px 16px 32px;overflow-y:auto; }
+.scenario-list { display:flex;flex-direction:column;gap:12px; }
+
+/* Scenario cards */
+.scenario-card { background:#fff;border-radius:var(--rlg);box-shadow:var(--ssm);overflow:hidden;border:2px solid transparent;transition:border-color .2s; }
+.scenario-card.accessible { cursor:pointer; }
+.scenario-card.locked { opacity:.55;background:var(--gray-100); }
+.sc-header { padding:16px;display:flex;align-items:center;gap:12px; }
+.sc-num { width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:800;flex-shrink:0;color:#fff; }
+.scenario-card.locked .sc-num { background:var(--gray-400)!important; }
+.sc-info { flex:1;min-width:0; }
+.sc-title { font-size:15px;font-weight:800;color:var(--gray-800);line-height:1.2; }
+.sc-themes { font-size:11px;color:var(--gray-400);font-weight:600;margin-top:2px; }
+.sc-progress-row { display:flex;align-items:center;gap:8px;margin-top:6px; }
+.progress-track { flex:1;height:6px;background:var(--gray-200);border-radius:99px;overflow:hidden; }
+.progress-fill { height:100%;border-radius:99px;transition:width .5s; }
+.progress-pct { font-size:11px;font-weight:700;color:var(--gray-600);min-width:30px; }
+.lock-reason { font-size:11px;color:var(--gray-400);font-weight:600;margin-top:4px; }
+.sc-chevron { font-size:12px;flex-shrink:0; }
+.sc-badge { font-size:12px;flex-shrink:0; }
+
+/* Activity list (inside scenario) */
+.activity-list { border-top:1px solid var(--gray-200);padding:8px 0;animation:fadeUp .2s ease both; }
+.act-row { width:100%;display:flex;align-items:center;gap:12px;padding:12px 16px;text-align:left;transition:background .1s;cursor:pointer;background:none;border:none; }
+.act-row:active { background:var(--gray-100); }
+.act-row.done { background:var(--green-light); }
+.act-icon { font-size:20px;flex-shrink:0; }
+.act-name { flex:1;font-size:14px;font-weight:700;color:var(--gray-800); }
+.act-row.done .act-name { color:var(--green-dark); }
+.act-result { font-size:16px;min-width:40px;text-align:right; }
+
+/* ── ACTIVITY VIEW ────────────────────────────────────────────── */
+#view-activity { background:var(--gray-50); }
+.act-header { background:#fff;padding:14px 20px;display:flex;align-items:center;gap:12px;box-shadow:var(--ssm);border-bottom:1px solid var(--gray-200);flex-shrink:0; }
+.btn-back-act { color:var(--accent);font-size:14px;font-weight:700;padding:6px 0; }
+.act-header-info { display:flex;align-items:center;gap:8px;font-size:16px;font-weight:800; }
+.act-body { flex:1;padding:20px 16px 32px;display:flex;flex-direction:column;gap:16px;overflow-y:auto;animation:fadeUp .3s ease both; }
+.context-tag { display:inline-block;padding:5px 14px;border-radius:99px;font-size:13px;font-weight:700;color:#fff;margin-bottom:4px; }
+.outcome-card { background:#fff;border-radius:var(--rlg);padding:18px;box-shadow:var(--ssm);border-left:4px solid var(--accent); }
+.outcome-label { font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--gray-400);margin-bottom:8px; }
+.outcome-text { font-size:15px;font-weight:600;color:var(--gray-800);line-height:1.5; }
+.prev-result { background:#FFFBEB;border:1px solid #FDE68A;border-radius:var(--rmd);padding:12px 16px;display:flex;align-items:center;gap:12px;font-size:14px;font-weight:600;color:#92400E; }
+
+/* Activity engine */
+.act-lang-banner { background:#EEF2FF;border:1.5px solid #C7D2FE;border-radius:8px;padding:10px 14px;font-size:13px;font-weight:700;color:#3730A3;display:flex;align-items:center;gap:8px; }
+.act-intro { padding:14px;background:var(--gray-100);border-radius:var(--rmd);font-size:14px;color:var(--gray-600);font-weight:600;line-height:1.5; }
+.act-text-block { background:#fff;border-radius:var(--rmd);padding:18px;font-size:15px;line-height:1.75;border:1px solid var(--gray-200); }
+.act-question { margin-bottom:18px; }
+.act-question-text { font-size:14px;font-weight:800;color:var(--gray-700);margin-bottom:10px;line-height:1.4; }
+.act-options { display:flex;flex-direction:column;gap:8px; }
+.act-option { padding:12px 14px;border-radius:10px;border:2px solid var(--gray-200);font-size:14px;font-weight:600;text-align:left;background:#fff;transition:all .15s;cursor:pointer; }
+.act-option:active { transform:scale(.98); }
+.act-option.selected { border-color:var(--accent);background:#EEF2FF;color:var(--accent-dark); }
+.act-option.correct { border-color:var(--green);background:var(--green-light);color:var(--green-dark); }
+.act-option.wrong { border-color:var(--red);background:var(--red-light);color:var(--red); }
+.act-listen-btn { display:flex;align-items:center;justify-content:center;gap:10px;padding:14px;border-radius:var(--rmd);font-size:15px;font-weight:800;width:100%;margin-bottom:14px;cursor:pointer;border:none;color:#fff;background:var(--accent); }
+.act-listen-btn.playing { background:var(--green); }
+.act-submit-row { margin-top:20px; }
+.act-score-box { background:var(--gray-100);border-radius:var(--rmd);padding:16px;text-align:center;margin-top:20px; }
+.act-score-label { font-size:12px;font-weight:700;color:var(--gray-400);text-transform:uppercase;margin-bottom:4px; }
+.act-score-val { font-family:var(--fd);font-size:36px;font-weight:900;color:var(--accent-dark); }
+.act-feedback { font-size:13px;font-weight:600;margin-top:6px; }
+
+/* Speaking */
+.speak-task { background:#FEF3C7;border:2px solid #F59E0B;border-radius:var(--rmd);padding:14px;margin-bottom:14px; }
+.speak-task-label { font-size:11px;font-weight:800;color:#92400E;text-transform:uppercase;margin-bottom:6px; }
+.speak-task-text { font-size:15px;font-weight:700;color:#78350F;line-height:1.5; }
+.speak-model { background:var(--green-light);border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:13px;color:var(--green-dark);font-weight:600; }
+.speak-record-btn { background:var(--red);color:#fff;padding:14px;border-radius:var(--rmd);font-size:15px;font-weight:800;width:100%;margin-bottom:12px;border:none;cursor:pointer; }
+.speak-record-btn.recording { background:#7C3AED;animation:pulse 1s infinite; }
+.speak-record-btn.done { background:var(--green); }
+.self-eval-title { font-size:13px;font-weight:800;color:var(--gray-600);margin-bottom:10px;text-transform:uppercase; }
+.self-eval-item { display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--gray-100); }
+.self-eval-item:last-child { border-bottom:none; }
+.self-eval-text { flex:1;font-size:13px;font-weight:600;color:var(--gray-700); }
+.self-eval-btns { display:flex;gap:6px; }
+.self-eval-btn { padding:6px 14px;border-radius:99px;font-size:13px;font-weight:800;border:2px solid var(--gray-200);cursor:pointer;background:none; }
+.self-eval-btn.yes { border-color:var(--green);background:var(--green-light);color:var(--green-dark); }
+.self-eval-btn.no { border-color:var(--red);background:var(--red-light);color:var(--red); }
+
+/* Writing */
+.write-area { width:100%;min-height:110px;border:2px solid var(--gray-200);border-radius:var(--rmd);padding:12px;font-size:14px;font-family:inherit;resize:vertical;line-height:1.6; }
+.write-area:focus { outline:none;border-color:var(--accent); }
+.write-prompt { background:#FEF3C7;border-left:4px solid #F59E0B;padding:12px 14px;border-radius:0 8px 8px 0;margin-bottom:12px;font-size:14px;font-weight:600;color:#78350F;line-height:1.5; }
+.write-checklist { margin-bottom:14px; }
+.checklist-item { display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--gray-100);font-size:13px;font-weight:600;color:var(--gray-700); }
+.checklist-cb { width:20px;height:20px;accent-color:var(--accent);cursor:pointer;flex-shrink:0; }
+
+/* Mediation */
+.med-situation { background:#F0FDF4;border:2px solid #86EFAC;border-radius:var(--rmd);padding:14px;margin-bottom:14px; }
+.med-situation-label { font-size:11px;font-weight:800;color:#166534;text-transform:uppercase;margin-bottom:6px; }
+.med-situation-text { font-size:14px;font-weight:600;color:#15803D;line-height:1.5; }
+
+/* Result */
+.result-section { background:#fff;border-radius:var(--rlg);padding:32px 20px;box-shadow:var(--smd);display:flex;flex-direction:column;align-items:center;gap:12px;animation:pop .4s ease both;text-align:center;margin-top:16px; }
+.result-stars-big { font-size:48px; }
+.result-score { font-family:var(--fd);font-size:40px;font-weight:800;color:var(--accent); }
+.result-msg { font-size:18px;font-weight:700;line-height:1.4; }
+
+/* Progress dots */
+.progress-dots { display:flex;gap:6px;justify-content:center;margin-bottom:16px; }
+.dot { width:8px;height:8px;border-radius:50%;background:var(--gray-200); }
+.dot.active { background:var(--accent); }
+.dot.done { background:var(--green); }
+
+/* ── UNLOCK VIEW ──────────────────────────────────────────────── */
+#view-unlock { align-items:center;justify-content:center;padding:24px;background:linear-gradient(145deg,#FEF9C3,#D1FAE5,#DBEAFE); }
+.unlock-card { background:#fff;border-radius:var(--rxl);padding:40px 28px;box-shadow:var(--slg);text-align:center;display:flex;flex-direction:column;align-items:center;gap:16px;animation:pop .5s ease both;max-width:360px;width:100%; }
+.unlock-emoji { font-size:64px;animation:bounce .8s infinite alternate; }
+.unlock-title { font-family:var(--fd);font-size:26px;font-weight:800; }
+.unlock-sc-name { font-family:var(--fd);font-size:20px;font-weight:800;color:var(--accent); }
+.unlock-msg { font-size:15px;color:var(--gray-600);font-weight:600;line-height:1.5; }
+
+/* ── BUTTONS ──────────────────────────────────────────────────── */
+.btn-primary { width:100%;padding:17px;background:linear-gradient(135deg,var(--accent),var(--accent-dark));color:#fff;border-radius:var(--rmd);font-size:17px;font-weight:800;box-shadow:0 4px 12px rgba(79,70,229,.35);transition:transform .15s;text-align:center;border:none;cursor:pointer; }
+.btn-primary:active { transform:scale(.97); }
+.btn-primary:disabled { opacity:.6;cursor:not-allowed; }
+.btn-secondary { width:100%;padding:14px;background:var(--gray-100);color:var(--gray-800);border-radius:var(--rmd);font-size:15px;font-weight:700;text-align:center;border:none;cursor:pointer;transition:background .15s; }
+.btn-secondary:active { background:var(--gray-200); }
+
+/* ── ERROR BOX ────────────────────────────────────────────────── */
+.error-box { background:var(--red-light);border:1px solid #FECACA;color:var(--red);border-radius:var(--rsm);padding:10px 14px;font-size:14px;font-weight:600;display:none;margin-bottom:10px; }
+.error-box.show { display:block; }
+
+/* ── LANG TOGGLE ──────────────────────────────────────────────── */
+.lang-toggle { display:flex;align-items:center;gap:0;background:rgba(255,255,255,.2);border-radius:20px;padding:2px;flex-shrink:0; }
+.lang-btn { padding:4px 10px;border-radius:18px;font-size:12px;font-weight:800;color:rgba(255,255,255,.7);cursor:pointer;border:none;background:none;transition:all .2s; }
+.lang-btn.active { background:#fff;color:var(--accent-dark); }
+
+/* ── STUDY MODE VIEW ──────────────────────────────────────────── */
+#view-study { background:var(--gray-50); }
+.study-header { padding:16px 20px;display:flex;align-items:center;gap:12px;box-shadow:var(--smd);flex-shrink:0; }
+.study-body { flex:1;padding:20px 16px 36px;overflow-y:auto;display:flex;flex-direction:column;gap:20px; }
+.study-section-title { font-family:var(--fd);font-size:16px;font-weight:800;color:var(--gray-800);margin-bottom:10px;display:flex;align-items:center;gap:8px; }
+
+/* Flashcards */
+.flashcard-grid { display:grid;grid-template-columns:repeat(2,1fr);gap:10px; }
+.flashcard { border-radius:var(--rmd);min-height:90px;cursor:pointer;perspective:600px;position:relative; }
+.flashcard-inner { width:100%;height:100%;transform-style:preserve-3d;transition:transform .4s;position:relative;min-height:90px; }
+.flashcard.flipped .flashcard-inner { transform:rotateY(180deg); }
+.flashcard-front,.flashcard-back { position:absolute;inset:0;border-radius:var(--rmd);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:12px;backface-visibility:hidden;-webkit-backface-visibility:hidden; }
+.flashcard-front { background:#fff;border:2px solid var(--gray-200); }
+.flashcard-back { background:var(--accent);color:#fff;transform:rotateY(180deg); }
+.fc-word { font-size:15px;font-weight:800;text-align:center;line-height:1.3; }
+.fc-hint { font-size:11px;color:var(--gray-400);margin-top:4px; }
+.fc-translation { font-size:14px;font-weight:700;text-align:center; }
+.fc-tap { font-size:10px;opacity:.7;margin-top:4px; }
+
+/* Grammar chips */
+.grammar-chips { display:flex;flex-wrap:wrap;gap:8px; }
+.grammar-chip { background:#EEF2FF;border-radius:99px;padding:8px 14px;font-size:13px;font-weight:700;color:var(--accent-dark);display:flex;align-items:center;gap:6px;cursor:pointer;transition:background .15s; }
+.grammar-chip:active { background:#C7D2FE; }
+
+/* Pronunciation row */
+.pronunc-row { display:flex;align-items:center;gap:10px;padding:10px 14px;background:#fff;border-radius:var(--rmd);border:1px solid var(--gray-200); }
+.pronunc-word { font-size:15px;font-weight:800;flex:1; }
+.pronunc-ipa { font-size:12px;color:var(--gray-400);font-weight:600; }
+.pronunc-btn { background:var(--accent);color:#fff;border:none;border-radius:8px;padding:6px 12px;font-size:12px;font-weight:800;cursor:pointer; }
+
+/* Study CTA */
+.study-cta { background:linear-gradient(135deg,var(--accent),var(--accent-dark));border-radius:var(--rlg);padding:20px;text-align:center;color:#fff; }
+.study-cta-title { font-family:var(--fd);font-size:20px;font-weight:800;margin-bottom:6px; }
+.study-cta-sub { font-size:13px;opacity:.85;margin-bottom:16px; }
+
+/* ── TEACHER DASHBOARD ────────────────────────────────────────── */
+#view-teacher { background:var(--gray-50); }
+.t-header { background:linear-gradient(135deg,#1e3a8a,#1D4ED8);padding:18px 20px;display:flex;align-items:center;justify-content:space-between;box-shadow:var(--smd);flex-shrink:0; }
+.t-header-left { display:flex;align-items:center;gap:10px; }
+.t-title { font-family:var(--fd);font-size:18px;font-weight:800;color:#fff;line-height:1.1; }
+.t-subtitle { font-size:11px;color:rgba(255,255,255,.7);font-weight:600;margin-top:2px; }
+.t-body { flex:1;overflow-y:auto;padding:16px 16px 40px; }
+
+/* Tab bar */
+.t-tabs { display:flex;gap:4px;background:#fff;border-radius:var(--rlg);padding:4px;box-shadow:var(--ssm);margin-bottom:16px; }
+.t-tab { flex:1;padding:10px 4px;border-radius:var(--rmd);font-size:12px;font-weight:800;text-align:center;border:none;background:none;color:var(--gray-400);cursor:pointer;transition:all .2s; }
+.t-tab.active { background:linear-gradient(135deg,#1D4ED8,#1e3a8a);color:#fff;box-shadow:0 2px 8px rgba(29,78,216,.3); }
+
+/* Stat cards */
+.t-stats { display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:16px; }
+.t-stat { background:#fff;border-radius:var(--rlg);padding:14px 16px;box-shadow:var(--ssm); }
+.t-stat-icon { font-size:20px;margin-bottom:4px; }
+.t-stat-val { font-family:var(--fd);font-size:24px;font-weight:800;line-height:1; }
+.t-stat-label { font-size:10px;font-weight:700;color:var(--gray-400);text-transform:uppercase;letter-spacing:.04em;margin-top:2px; }
+
+/* Section cards */
+.t-section { background:#fff;border-radius:var(--rlg);box-shadow:var(--ssm);overflow:hidden;margin-bottom:14px; }
+.t-sec-hdr { padding:12px 16px;border-bottom:1px solid var(--gray-100);display:flex;align-items:center;gap:8px; }
+.t-sec-title { font-family:var(--fd);font-size:15px;font-weight:800;flex:1; }
+.t-badge { background:#EEF2FF;color:#3730A3;font-size:11px;font-weight:800;padding:3px 10px;border-radius:99px; }
+.t-badge.risk { background:var(--red-light);color:var(--red); }
+
+/* Student rows */
+.t-st-row { padding:12px 16px;border-bottom:1px solid var(--gray-100);display:flex;align-items:center;gap:10px; }
+.t-st-row:last-child { border-bottom:none; }
+.t-avatar { width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#fff;flex-shrink:0; }
+.t-st-info { flex:1;min-width:0; }
+.t-st-name { font-size:13px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
+.t-st-meta { font-size:11px;color:var(--gray-400);font-weight:600;margin-top:2px; }
+.t-mini-bar { height:4px;background:var(--gray-200);border-radius:99px;overflow:hidden;margin-top:4px;width:80px; }
+.t-mini-fill { height:100%;border-radius:99px; }
+.t-st-right { text-align:right;flex-shrink:0; }
+.t-st-pct { font-family:var(--fd);font-size:15px;font-weight:800; }
+.t-pill { font-size:10px;font-weight:800;padding:2px 8px;border-radius:99px;display:inline-block;margin-top:2px; }
+.t-pill.risk { background:var(--red-light);color:var(--red); }
+.t-pill.ok { background:var(--green-light);color:var(--green-dark); }
+.t-pill.manual { background:#FEF3C7;color:#92400E; }
+
+/* Action buttons inside rows */
+.t-row-actions { display:flex;gap:6px;margin-top:6px; }
+.t-btn-sm { padding:4px 10px;border-radius:8px;font-size:11px;font-weight:800;border:none;cursor:pointer; }
+.t-btn-unlock { background:#EEF2FF;color:#3730A3; }
+.t-btn-delete { background:var(--red-light);color:var(--red); }
+
+/* Add student form */
+.t-form { padding:16px;display:flex;flex-direction:column;gap:10px; }
+.t-input { width:100%;padding:11px 14px;border:2px solid var(--gray-200);border-radius:var(--rmd);font-size:14px;font-weight:600;font-family:inherit;outline:none; }
+.t-input:focus { border-color:#1D4ED8; }
+.t-select { width:100%;padding:11px 14px;border:2px solid var(--gray-200);border-radius:var(--rmd);font-size:14px;font-weight:600;font-family:inherit;outline:none;background:#fff; }
+.t-btn-add { background:linear-gradient(135deg,var(--green),var(--green-dark));color:#fff;padding:13px;border-radius:var(--rmd);font-size:15px;font-weight:800;border:none;cursor:pointer;width:100%; }
+
+/* Filter bar */
+.t-filter-bar { display:flex;gap:8px;margin-bottom:14px;overflow-x:auto;padding-bottom:4px; }
+.t-filter-chip { padding:7px 14px;border-radius:99px;font-size:12px;font-weight:800;border:2px solid var(--gray-200);background:#fff;color:var(--gray-600);cursor:pointer;white-space:nowrap;flex-shrink:0; }
+.t-filter-chip.active { border-color:#1D4ED8;background:#EEF2FF;color:#1D4ED8; }
+
+.t-empty { padding:24px;text-align:center;color:var(--gray-400);font-size:13px;font-weight:600; }
+.t-btn-refresh { background:#EEF2FF;color:#1D4ED8;padding:12px;border-radius:var(--rmd);font-size:14px;font-weight:800;border:none;cursor:pointer;width:100%;margin-top:8px; }
+
+/* ── SAFE AREA ────────────────────────────────────────────────── */
+@supports(padding:env(safe-area-inset-bottom)) { .view { padding-bottom:env(safe-area-inset-bottom); } }
+
+/* ── MASCOT ORBIT ─────────────────────────────────────────────── */
+#orbit-container { position:fixed;top:12px;right:12px;z-index:9998;pointer-events:none;display:flex;flex-direction:column;align-items:center; }
+#orbit-svg { width:68px;height:68px;animation:orbitFloat 4s ease-in-out infinite; }
+#orbit-bubble { background:#fff;border-radius:12px;padding:6px 10px;font-size:12px;box-shadow:var(--smd);margin-bottom:6px;opacity:0;transition:opacity .25s;max-width:130px;text-align:center;font-weight:700; }
+#orbit-bubble.show { opacity:1; }
+@keyframes orbitFloat { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-7px)} }
+@keyframes heartBeat { 0%,100%{transform:scale(1)} 50%{transform:scale(1.2)} }
+</style>
+</head>
+<body>
+
+<!-- Loading overlay -->
+<div class="loading-overlay" id="loading-overlay">
+  <div class="loader" id="loader-icon">🌟</div>
+  <div class="loading-text" id="loading-text">Loading...</div>
+</div>
+
+<!-- ── SPLASH ──────────────────────────────────────────────────── -->
+<div class="view active" id="view-splash">
+  <div class="splash-logo">🦜</div>
+  <div class="splash-title">StudyBuddy English</div>
+  <div class="splash-sub">PreK — Grade 12 • Panama 🇵🇦</div>
+</div>
+
+<!-- ── LOGIN VIEW ─────────────────────────────────────────────── -->
+<div class="view" id="view-login">
+  <div style="background:linear-gradient(145deg,#4F46E5,#9333EA);flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px">
+    <div style="font-size:60px;animation:bounce 1s infinite alternate">🦜</div>
+    <div style="font-family:var(--fd);font-size:32px;font-weight:800;color:#fff;margin-top:10px">StudyBuddy</div>
+    <div style="font-size:14px;color:rgba(255,255,255,.75);margin-bottom:32px">English · PreK–12 · Panama 🇵🇦</div>
+
+    <div style="width:100%;max-width:360px;background:#fff;border-radius:var(--rxl);padding:28px 24px;box-shadow:var(--slg);display:flex;flex-direction:column;gap:14px">
+
+      <div id="login-step-user">
+        <div style="font-size:12px;font-weight:800;color:var(--gray-600);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px" data-i="loginUserLabel">Username / Usuario</div>
+        <input id="login-username" type="text" autocomplete="off" autocapitalize="none" autocorrect="off"
+          style="width:100%;padding:14px 16px;border:2px solid var(--gray-200);border-radius:var(--rmd);font-size:18px;font-weight:700;outline:none;font-family:inherit"
+          placeholder="tu.usuario" />
+        <div class="error-box" id="login-user-err" style="margin-top:8px"></div>
+        <button class="btn-primary" style="margin-top:12px" onclick="loginStep1()">
+          <span data-i="loginContinue">Continue →</span>
+        </button>
+      </div>
+
+      <div id="login-step-pin" style="display:none;flex-direction:column;gap:12px">
+        <button onclick="loginBack()" style="color:var(--accent);font-size:13px;font-weight:700;text-align:left">← Back</button>
+        <div style="font-size:12px;font-weight:800;color:var(--gray-600);text-transform:uppercase;letter-spacing:.05em" data-i="loginPinLabel">PIN Secret</div>
+        <input id="login-pin" type="password" inputmode="text" autocomplete="off" autocorrect="off" autocapitalize="none"
+          style="width:100%;padding:14px 16px;border:2px solid var(--gray-200);border-radius:var(--rmd);font-size:18px;font-weight:700;outline:none;font-family:inherit"
+          placeholder="••••••" />
+        <div class="error-box" id="login-pin-err"></div>
+        <button class="btn-primary" id="btn-login-submit" onclick="loginSubmit()">
+          <span data-i="loginEnter">🚀 Let's go!</span>
+        </button>
+      </div>
+
+      <div style="border-top:1px solid var(--gray-200);padding-top:12px;text-align:center">
+        <button onclick="loginAsGuest()" style="color:var(--gray-400);font-size:13px;font-weight:700" data-i="loginGuest">
+          Continue without account
+        </button>
+      </div>
+    </div>
+
+    <!-- Sync status badge -->
+    <div id="sync-badge" style="margin-top:16px;display:none;align-items:center;gap:8px;background:rgba(255,255,255,.15);border-radius:99px;padding:6px 14px;font-size:12px;font-weight:700;color:#fff">
+      <span id="sync-icon">☁️</span>
+      <span id="sync-text">Syncing…</span>
+    </div>
+  </div>
+</div>
+
+<!-- ── HOME (Grade Selector) ──────────────────────────────────── -->
+<div class="view" id="view-home">
+  <div class="home-header">
+    <div style="display:flex;align-items:flex-start;justify-content:space-between">
+      <div>
+        <div class="home-logo">🦜</div>
+        <div class="home-title">StudyBuddy English</div>
+        <div class="home-sub" data-i="homeSubtitle">Choose your grade to start learning!</div>
+      </div>
+      <div class="lang-toggle" style="margin-top:6px">
+        <button class="lang-btn active" id="btn-lang-en" onclick="setLang('en')">🇬🇧 EN</button>
+        <button class="lang-btn" id="btn-lang-es" onclick="setLang('es')">🇵🇦 ES</button>
+      </div>
+    </div>
+  </div>
+  <div class="home-body">
+    <div class="home-section" data-i="groupEarly">🌈 Early Learners</div>
+    <div class="grade-grid" id="grid-early"></div>
+    <div class="home-section" data-i="groupElementary">📚 Elementary</div>
+    <div class="grade-grid" id="grid-elementary"></div>
+    <div class="home-section" data-i="groupSecondary">🚀 Middle & High School</div>
+    <div class="grade-grid" id="grid-secondary"></div>
+  </div>
+</div>
+
+<!-- ── GRADE VIEW ──────────────────────────────────────────────── -->
+<div class="view" id="view-grade">
+  <header class="grade-header" id="grade-header">
+    <button class="btn-back-home" id="btn-back-home" onclick="showHome()">←</button>
+    <div class="grade-header-info">
+      <div class="grade-header-title" id="grade-header-title">Grade 4</div>
+      <div class="grade-header-sub" id="grade-header-sub">A1.2 · 6 Scenarios</div>
+    </div>
+    <span id="grade-header-emoji" style="font-size:28px">📚</span>
+  </header>
+  <div class="grade-body">
+    <div class="scenario-list" id="scenario-list"></div>
+  </div>
+</div>
+
+<!-- ── ACTIVITY VIEW ───────────────────────────────────────────── -->
+<div class="view" id="view-activity">
+  <header class="act-header">
+    <button class="btn-back-act" id="btn-back-activity">← Back</button>
+    <div class="act-header-info">
+      <span id="act-skill-icon">📝</span>
+      <span id="act-skill-name">Activity</span>
+    </div>
+  </header>
+  <div class="act-body" id="act-body"></div>
+</div>
+
+<!-- ── UNLOCK VIEW ─────────────────────────────────────────────── */
+<div class="view" id="view-unlock">
+  <div class="unlock-card">
+    <div class="unlock-emoji">🔓</div>
+    <h1 class="unlock-title" data-i="unlockTitle">New Scenario Unlocked!</h1>
+    <div class="unlock-sc-name" id="unlock-sc-name">Next Scenario</div>
+    <p class="unlock-msg" data-i="unlockMsg">Great work! Keep going — your next challenge awaits! 🌟</p>
+    <button class="btn-primary" id="btn-unlock-continue" data-i="letsGo">Let's go! →</button>
+  </div>
+</div>
+
+<!-- ── STUDY MODE VIEW ────────────────────────────────────────── -->
+<div class="view" id="view-study">
+  <header class="study-header" id="study-header">
+    <button class="btn-back-home" id="btn-back-study" onclick="backFromStudy()">←</button>
+    <div style="flex:1">
+      <div class="grade-header-title" id="study-scenario-title">Scenario</div>
+      <div class="grade-header-sub" data-i="studyMode">📖 Study Mode / Modo Estudio</div>
+    </div>
+    <span id="study-header-emoji" style="font-size:26px">📚</span>
+  </header>
+  <div class="study-body" id="study-body"></div>
+</div>
+
+<!-- ── TEACHER DASHBOARD ───────────────────────────────────────── -->
+<div class="view" id="view-teacher">
+  <header class="t-header">
+    <div class="t-header-left">
+      <span style="font-size:26px">📊</span>
+      <div>
+        <div class="t-title" id="t-teacher-name">Dashboard Docente</div>
+        <div class="t-subtitle" id="t-teacher-school">StudyBuddy English</div>
+      </div>
+    </div>
+    <button onclick="teacherLogout()" style="background:rgba(255,255,255,.2);color:#fff;border:none;border-radius:10px;padding:7px 14px;font-size:13px;font-weight:700;cursor:pointer">Salir</button>
+  </header>
+
+  <!-- Tab bar -->
+  <div class="t-body">
+    <div class="t-tabs">
+      <button class="t-tab active" id="ttab-progress" onclick="tShowTab('progress')">📈 Progreso</button>
+      <button class="t-tab" id="ttab-students" onclick="tShowTab('students')">👥 Estudiantes</button>
+      <button class="t-tab" id="ttab-add" onclick="tShowTab('add')">➕ Nuevo</button>
+    </div>
+
+    <!-- ── TAB: PROGRESS ─────────────────────────────────────── -->
+    <div id="t-tab-progress">
+      <!-- Stats -->
+      <div class="t-stats">
+        <div class="t-stat">
+          <div class="t-stat-icon">👥</div>
+          <div class="t-stat-val" id="t-stat-total">—</div>
+          <div class="t-stat-label">Estudiantes</div>
+        </div>
+        <div class="t-stat">
+          <div class="t-stat-icon">📈</div>
+          <div class="t-stat-val" id="t-stat-avg">—</div>
+          <div class="t-stat-label">Promedio</div>
+        </div>
+        <div class="t-stat">
+          <div class="t-stat-icon">✅</div>
+          <div class="t-stat-val" id="t-stat-done">—</div>
+          <div class="t-stat-label">Act. completas</div>
+        </div>
+        <div class="t-stat">
+          <div class="t-stat-icon">⚠️</div>
+          <div class="t-stat-val" id="t-stat-risk" style="color:var(--red)">—</div>
+          <div class="t-stat-label">En riesgo</div>
+        </div>
+      </div>
+
+      <!-- Grade filter -->
+      <div class="t-filter-bar" id="t-grade-filter"></div>
+
+      <!-- At-risk section -->
+      <div class="t-section" id="t-risk-section" style="display:none">
+        <div class="t-sec-hdr">
+          <span>⚠️</span>
+          <span class="t-sec-title">Estudiantes en riesgo</span>
+          <span class="t-badge risk" id="t-risk-count">0</span>
+        </div>
+        <div id="t-risk-list"></div>
+      </div>
+
+      <!-- All students progress -->
+      <div class="t-section">
+        <div class="t-sec-hdr">
+          <span>👤</span>
+          <span class="t-sec-title">Progreso por estudiante</span>
+          <span class="t-badge" id="t-progress-count">0</span>
+        </div>
+        <div id="t-progress-list"><div class="t-empty">Cargando...</div></div>
+      </div>
+
+      <button class="t-btn-refresh" onclick="tLoadData()">↻ Actualizar datos</button>
+    </div>
+
+    <!-- ── TAB: STUDENTS ─────────────────────────────────────── -->
+    <div id="t-tab-students" style="display:none">
+      <!-- Grade filter -->
+      <div class="t-filter-bar" id="t-student-filter"></div>
+
+      <div class="t-section">
+        <div class="t-sec-hdr">
+          <span>👥</span>
+          <span class="t-sec-title">Lista de estudiantes</span>
+          <span class="t-badge" id="t-students-count">0</span>
+        </div>
+        <div id="t-students-list"><div class="t-empty">Cargando...</div></div>
+      </div>
+    </div>
+
+    <!-- ── TAB: ADD STUDENT ──────────────────────────────────── -->
+    <div id="t-tab-add" style="display:none">
+      <div class="t-section">
+        <div class="t-sec-hdr">
+          <span>➕</span>
+          <span class="t-sec-title">Nuevo estudiante</span>
+        </div>
+        <div class="t-form">
+          <input class="t-input" id="new-name"     type="text"   placeholder="Nombre completo" autocapitalize="words" autocomplete="off"/>
+          <input class="t-input" id="new-username"  type="text"   placeholder="Usuario (ej: maria.garcia)" autocapitalize="none" autocomplete="off" autocorrect="off"/>
+          <input class="t-input" id="new-pin"       type="text"   placeholder="PIN (mín. 3 caracteres)" autocapitalize="none" autocomplete="off" autocorrect="off"/>
+          <select class="t-select" id="new-grade">
+            <option value="3">Grade 3</option>
+            <option value="4" selected>Grade 4</option>
+            <option value="5">Grade 5</option>
+            <option value="6">Grade 6</option>
+            <option value="7">Grade 7</option>
+            <option value="8">Grade 8</option>
+            <option value="9">Grade 9</option>
+            <option value="10">Grade 10</option>
+            <option value="11">Grade 11</option>
+            <option value="12">Grade 12</option>
+          </select>
+          <select class="t-select" id="new-class"></select>
+          <div class="error-box" id="new-student-err"></div>
+          <div id="new-student-ok" style="background:var(--green-light);color:var(--green-dark);border-radius:var(--rsm);padding:10px 14px;font-size:14px;font-weight:700;display:none">✅ Estudiante creado correctamente</div>
+          <button class="t-btn-add" onclick="tCreateStudent()">➕ Crear estudiante</button>
+        </div>
+      </div>
+
+      <!-- Quick info -->
+      <div class="t-section">
+        <div class="t-sec-hdr"><span>💡</span><span class="t-sec-title">Cómo accede el estudiante</span></div>
+        <div style="padding:14px;font-size:13px;color:var(--gray-600);line-height:1.6">
+          El estudiante abre la app en <strong>studybuddy_web</strong>, escribe su <strong>usuario</strong> y <strong>PIN</strong>, y accede directamente a su grado asignado.<br><br>
+          No necesita email ni cuenta de correo.
+        </div>
+      </div>
+    </div>
+
+  </div><!-- end t-body -->
+</div>
+
+<!-- ── MASCOT ──────────────────────────────────────────────────── -->
+<div id="orbit-container">
+  <div id="orbit-bubble"></div>
+  <svg id="orbit-svg" viewBox="0 0 200 200">
+    <ellipse cx="100" cy="172" rx="44" ry="11" fill="#9ca3af" opacity=".35"/>
+    <circle cx="100" cy="110" r="68" fill="#c9d9e8"/>
+    <circle cx="100" cy="90" r="44" fill="#2d4593"/>
+    <ellipse cx="83" cy="86" rx="6" ry="9" fill="#4cc9f0"/>
+    <ellipse cx="117" cy="86" rx="6" ry="9" fill="#4cc9f0"/>
+    <path d="M81 105 Q100 120 119 105" stroke="#4cc9f0" stroke-width="4" fill="none" stroke-linecap="round"/>
+    <ellipse cx="40" cy="106" rx="20" ry="10" fill="#a9c7da"/>
+    <circle cx="25" cy="106" r="7" fill="#38bdf8"/>
+    <ellipse cx="160" cy="106" rx="20" ry="10" fill="#a9c7da"/>
+    <circle cx="175" cy="106" r="7" fill="#38bdf8"/>
+    <circle cx="100" cy="121" r="16" fill="#22b8cf"/>
+    <path id="orbit-heart" d="M100 125C96 119,88 119,88 127C88 135,100 141,100 141C100 141,112 135,112 127C112 119,104 119,100 125Z" fill="#ef4444" style="transform-origin:100px 131px;animation:heartBeat 2s infinite ease-in-out"/>
+  </svg>
+</div>
+
+<script>
+/* ═══════════════════════════════════════════════════════════════
+   STUDYBUDDY ENGLISH — PreK through Grade 12
+   Pure HTML/CSS/JS · Web Speech API · LocalStorage + Supabase
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── SUPABASE CONFIG ──────────────────────────────────────────── */
+const SB_URL = 'https://lsgnffjoqcbhjrleayvu.supabase.co'
+const SB_KEY = 'sb_publishable_cWKJQXNUUArLj6eQ2DBpWw_vsBvWTm6'
+
+async function sbRpc(fn, params = {}) {
+  try {
+    const res = await fetch(`${SB_URL}/rest/v1/rpc/${fn}`, {
+      method: 'POST',
+      headers: {
+        'apikey': SB_KEY,
+        'Authorization': `Bearer ${SB_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(params),
+      signal: AbortSignal.timeout(8000)
+    })
+    if (!res.ok) return { success: false, error: `HTTP ${res.status}` }
+    const data = await res.json()
+    return data
+  } catch (e) {
+    return { success: false, error: 'offline', offline: true }
+  }
+}
+
+/* ── SESSION ──────────────────────────────────────────────────── */
+const SB_SESSION_KEY = 'sb_eng_session'
+const SB_PROGRESS_CLOUD = 'sb_eng_cloud_progress'
+
+function saveSession(data) {
+  localStorage.setItem(SB_SESSION_KEY, JSON.stringify(data))
+  state.currentUser = data
+}
+function loadSession() {
+  try { return JSON.parse(localStorage.getItem(SB_SESSION_KEY)) } catch { return null }
+}
+function clearSession() {
+  localStorage.removeItem(SB_SESSION_KEY)
+  state.currentUser = null
+}
+
+/* ── LOGIN FLOW ───────────────────────────────────────────────── */
+function loginStep1() {
+  const username = document.getElementById('login-username').value.trim()
+  const err = document.getElementById('login-user-err')
+  if (!username) { err.textContent = '⚠ ' + (LANG==='es'?'Ingresa tu usuario':'Enter your username'); err.classList.add('show'); return }
+  err.classList.remove('show')
+  document.getElementById('login-step-user').style.display = 'none'
+  document.getElementById('login-step-pin').style.display = 'flex'
+  document.getElementById('login-pin').focus()
+}
+
+function loginBack() {
+  document.getElementById('login-pin').value = ''
+  document.getElementById('login-pin-err').classList.remove('show')
+  document.getElementById('login-step-pin').style.display = 'none'
+  document.getElementById('login-step-user').style.display = 'block'
+}
+
+async function loginSubmit() {
+  const username = document.getElementById('login-username').value.trim()
+  const pin      = document.getElementById('login-pin').value.trim()
+  const err      = document.getElementById('login-pin-err')
+  const btn      = document.getElementById('btn-login-submit')
+  if (pin.length < 3) { err.textContent = '⚠ PIN muy corto'; err.classList.add('show'); return }
+  err.classList.remove('show')
+  btn.disabled = true
+  btn.textContent = LANG==='es' ? '⏳ Entrando…' : '⏳ Loading…'
+
+  // Try teacher login first, then student
+  let result = await sbRpc('sb_teacher_login', { p_username: username, p_pin: pin })
+
+  if (result.success && result.role === 'teacher') {
+    btn.disabled = false
+    btn.textContent = LANG==='es' ? '🚀 ¡Vamos!' : '🚀 Let\'s go!'
+    await openTeacherDashboard(result.data)
+    return
+  }
+
+  // Not a teacher — try student login
+  result = await sbRpc('sb_student_login', { p_username: username, p_pin: pin })
+
+  btn.disabled = false
+  btn.textContent = LANG==='es' ? '🚀 ¡Vamos!' : '🚀 Let\'s go!'
+
+  if (!result.success) {
+    err.textContent = '⚠ ' + (result.error || (LANG==='es'?'Usuario o PIN incorrecto':'Wrong username or PIN'))
+    err.classList.add('show')
+    document.getElementById('login-pin').value = ''
+    return
+  }
+
+  saveSession(result.data)
+  await bootApp(result.data)
+}
+
+function loginAsGuest() {
+  // Guest mode — use LocalStorage only, no cloud sync
+  const guest = { id: 'guest_' + Date.now(), name: 'Guest', assigned_grade: '4', guest: true }
+  saveSession(guest)
+  showHome()
+}
+
+/* ── SYNC STATUS BADGE ────────────────────────────────────────── */
+function showSync(text, icon = '☁️') {
+  const badge = document.getElementById('sync-badge')
+  document.getElementById('sync-icon').textContent = icon
+  document.getElementById('sync-text').textContent = text
+  badge.style.display = 'flex'
+  setTimeout(() => badge.style.display = 'none', 3000)
+}
+
+/* ── CLOUD PROGRESS LOAD ──────────────────────────────────────── */
+async function loadCloudProgress(userId, gradeId) {
+  if (!userId || userId.startsWith('guest_')) return
+  const result = await sbRpc('sb_get_student_progress', {
+    p_student_id: userId,
+    p_grade_id:   gradeId
+  })
+  if (!result.success || result.offline) return
+
+  // Merge cloud into local — cloud wins on conflicts
+  const prog = state.progress[gradeId] || {}
+  ;(result.results || []).forEach(r => {
+    const key = `${gradeId}_${r.scenario_idx}_${r.skill_idx}`
+    const existing = prog[key]
+    if (!existing || r.score > existing.score) {
+      prog[key] = { score: r.score, stars: r.stars, done: true, ts: r.completed_at }
+    }
+  })
+  state.progress[gradeId] = prog
+  saveProgress()
+
+  // Store unlocked scenario indexes
+  state.cloudUnlocks = state.cloudUnlocks || {}
+  state.cloudUnlocks[gradeId] = result.unlocks || [0]
+}
+
+/* ── CLOUD SAVE (with local fallback) ────────────────────────── */
+async function saveResultCloud(gradeId, scenarioIdx, skillIdx, score, stars) {
+  const user = state.currentUser
+  if (!user || user.guest) return  // guest = local only
+
+  const result = await sbRpc('sb_save_result', {
+    p_student_id:   user.id,
+    p_grade_id:     gradeId,
+    p_scenario_idx: scenarioIdx,
+    p_skill_idx:    skillIdx,
+    p_score:        score,
+    p_stars:        stars
+  })
+
+  if (result.offline) {
+    // Queue for later sync
+    const queue = JSON.parse(localStorage.getItem('sb_sync_queue') || '[]')
+    queue.push({ gradeId, scenarioIdx, skillIdx, score, stars, ts: Date.now() })
+    localStorage.setItem('sb_sync_queue', JSON.stringify(queue))
+    return null
+  }
+
+  return result.new_unlock || null
+}
+
+/* ── PENDING SYNC (run on login) ─────────────────────────────── */
+async function flushSyncQueue() {
+  const user = state.currentUser
+  if (!user || user.guest) return
+  const queue = JSON.parse(localStorage.getItem('sb_sync_queue') || '[]')
+  if (!queue.length) return
+  for (const item of queue) {
+    await sbRpc('sb_save_result', {
+      p_student_id:   user.id,
+      p_grade_id:     item.gradeId,
+      p_scenario_idx: item.scenarioIdx,
+      p_skill_idx:    item.skillIdx,
+      p_score:        item.score,
+      p_stars:        item.stars
+    })
+  }
+  localStorage.removeItem('sb_sync_queue')
+  showSync(LANG==='es' ? '✅ Sincronizado' : '✅ Synced', '✅')
+}
+
+/* ── BOOT APP AFTER LOGIN ─────────────────────────────────────── */
+async function bootApp(userData) {
+  // Flush any pending offline saves
+  await flushSyncQueue()
+  // Go to home — grade progress loads on demand
+  showHome()
+  orbitSay('Welcome! 👋', '¡Bienvenido!')
+}
+
+/* ── ENHANCED setActProgress WITH CLOUD SAVE ─────────────────── */
+
+/* ── i18n SYSTEM ──────────────────────────────────────────────── */
+let LANG = localStorage.getItem('sb_lang') || 'en'
+
+const I18N = {
+  en: {
+    homeSubtitle:    'Choose your grade to start learning!',
+    groupEarly:      '🌈 Early Learners',
+    groupElementary: '📚 Elementary',
+    groupSecondary:  '🚀 Middle & High School',
+    studyMode:       '📖 Study Mode',
+    activitiesDone:  'activities done',
+    scenariosLabel:  'Scenarios',
+    lockReason:      '🔒 Complete previous scenario',
+    studyFirst:      '📖 Study First',
+    goToActivities:  '🎯 Go to Activities',
+    vocabulary:      '📝 Vocabulary',
+    grammar:         '⚙️ Grammar Structures',
+    pronunciation:   '🔊 Pronunciation',
+    tapFlip:         'Tap to flip',
+    listenModel:     '🔊 Hear it',
+    listenSentence:  '🔊 Listen to sentence',
+    checkAnswers:    '✅ Check Answers',
+    submitWriting:   '✅ Submit Writing',
+    submitEval:      '✅ Submit Evaluation',
+    saveResult:      '✅ Save Result',
+    backScenarios:   '← Back to Scenarios',
+    prevResult:      'Previous:',
+    learningObj:     'Learning Objective',
+    listenInstr:     '🎧 Listen to each sentence and choose the best answer.',
+    readInstr:       '📖 Read the text carefully, then answer the questions.',
+    readAloud:       '🔊 Read aloud',
+    speakInstr:      '🗣️ Look at the task, listen to the model, then record yourself.',
+    hearModel:       '🔊 Hear the model',
+    tapRecord:       '🎤 Tap to Record',
+    tapStop:         '⏹ Tap to Stop',
+    recorded:        '✅ Recorded! Press to re-record',
+    recordStatus:    '🔴 Recording…',
+    greatJob:        'Great job! 🎉',
+    howDidYou:       'How did you do?',
+    writeInstr:      '✏️ Read the prompts and write your sentences. Then check your work.',
+    exampleLabel:    '💡',
+    checkWriting:    'Check your writing ✅',
+    medInstr:        '🤝 Read each situation and choose the best response.',
+    situation:       'Situation',
+    nextTask:        'Next task →',
+    finishEval:      'Finish & evaluate',
+    task:            'Task',
+    of:              'of',
+    yesBtn:          '✓ Yes',
+    noBtn:           '✗ No',
+    answerAll:       '⚠ Please answer all questions.',
+    answerAllSit:    '⚠ Please answer all situations.',
+    evalAll:         '⚠ Please evaluate all criteria.',
+    writeSomething:  '⚠ Please write something in each box.',
+    excellent:       'Excellent! 🎉',
+    wellDone:        'Well done! 💪',
+    goodEffort:      'Good effort! 📖',
+    keepTrying:      'Keep trying! 🌟',
+    ctaTitle:        '🚀 Ready to Practice?',
+    ctaSub:          "You've studied the content. Now let's put it to work!",
+    unlockTitle:     'New Scenario Unlocked!',
+    unlockMsg:       "Great work! Keep going — your next challenge awaits! 🌟",
+    letsGo:          "Let's go! →",
+  },
+  es: {
+    homeSubtitle:    '¡Elige tu grado y empieza a aprender!',
+    groupEarly:      '🌈 Primeros Aprendices',
+    groupElementary: '📚 Primaria',
+    groupSecondary:  '🚀 Secundaria y Bachillerato',
+    studyMode:       '📖 Modo Estudio',
+    activitiesDone:  'actividades completadas',
+    scenariosLabel:  'Escenarios',
+    lockReason:      '🔒 Completa el escenario anterior',
+    studyFirst:      '📖 Estudiar primero',
+    goToActivities:  '🎯 Ir a las actividades',
+    vocabulary:      '📝 Vocabulario',
+    grammar:         '⚙️ Estructuras gramaticales',
+    pronunciation:   '🔊 Pronunciación',
+    tapFlip:         'Toca para ver',
+    listenModel:     '🔊 Escuchar',
+    listenSentence:  '🔊 Escuchar oración',
+    checkAnswers:    '✅ Verificar respuestas',
+    submitWriting:   '✅ Enviar escritura',
+    submitEval:      '✅ Enviar evaluación',
+    saveResult:      '✅ Guardar resultado',
+    backScenarios:   '← Volver a escenarios',
+    prevResult:      'Anterior:',
+    learningObj:     'Objetivo de aprendizaje',
+    listenInstr:     '🎧 Escucha cada oración y selecciona la respuesta correcta.',
+    readInstr:       '📖 Lee el texto con cuidado y responde las preguntas.',
+    readAloud:       '🔊 Leer en voz alta',
+    speakInstr:      '🗣️ Mira la tarea, escucha el modelo y grábate.',
+    hearModel:       '🔊 Escuchar modelo',
+    tapRecord:       '🎤 Toca para grabar',
+    tapStop:         '⏹ Toca para parar',
+    recorded:        '✅ ¡Grabado! Toca para volver a grabar',
+    recordStatus:    '🔴 Grabando…',
+    greatJob:        '¡Excelente! 🎉',
+    howDidYou:       '¿Cómo te fue?',
+    writeInstr:      '✏️ Lee las instrucciones y escribe tus oraciones. Luego revisa tu trabajo.',
+    exampleLabel:    '💡 Ejemplo:',
+    checkWriting:    'Revisa tu escritura ✅',
+    medInstr:        '🤝 Lee cada situación y elige la mejor respuesta.',
+    situation:       'Situación',
+    nextTask:        'Siguiente tarea →',
+    finishEval:      'Terminar y evaluar',
+    task:            'Tarea',
+    of:              'de',
+    yesBtn:          '✓ Sí',
+    noBtn:           '✗ No',
+    answerAll:       '⚠ Responde todas las preguntas.',
+    answerAllSit:    '⚠ Responde todas las situaciones.',
+    evalAll:         '⚠ Evalúa todos los criterios.',
+    writeSomething:  '⚠ Escribe algo en cada cuadro.',
+    excellent:       '¡Excelente! 🎉',
+    wellDone:        '¡Bien hecho! 💪',
+    goodEffort:      '¡Buen intento! 📖',
+    keepTrying:      '¡Sigue intentando! 🌟',
+    ctaTitle:        '🚀 ¿Listo para practicar?',
+    ctaSub:          '¡Ya estudiaste el contenido. Ahora a ponerlo en práctica!',
+    unlockTitle:     '¡Nuevo escenario desbloqueado!',
+    unlockMsg:       '¡Excelente trabajo! Sigue adelante — tu próximo desafío te espera! 🌟',
+    letsGo:          '¡Vamos allá! →',
+  }
+}
+
+function t(key) { return (I18N[LANG] || I18N.en)[key] || key }
+
+function setLang(lang) {
+  LANG = lang
+  localStorage.setItem('sb_lang', lang)
+  document.getElementById('btn-lang-en').classList.toggle('active', lang==='en')
+  document.getElementById('btn-lang-es').classList.toggle('active', lang==='es')
+  // Update all data-i elements
+  document.querySelectorAll('[data-i]').forEach(el => {
+    const key = el.dataset.i
+    if (I18N[LANG][key]) el.textContent = I18N[LANG][key]
+  })
+  // Re-render grade cards with new lang
+  renderGradeCards()
+  updateUnlockView()
+  // Refresh grade view header if visible
+  if (state.currentGrade) {
+    document.getElementById('grade-header-sub').textContent =
+      `${state.currentGrade.cefr} · ${state.scenarios.length} ${t('scenariosLabel')}`
+    renderScenarioList()
+  }
+}
+
+/* ── GRADE METADATA ───────────────────────────────────────────── */
+const GRADES = [
+  { id:'pre-k', label:'PreK', emoji:'🎨', cefr:'Pre-A1', file:'pre_k.json',
+    color1:'#F59E0B', color2:'#D97706', colorLight:'#FEF3C7', group:'early', desc:'Colors, shapes, letters' },
+  { id:'kinder', label:'Kinder', emoji:'🧸', cefr:'Pre-A1', file:'K.json',
+    color1:'#F97316', color2:'#EA580C', colorLight:'#FFEDD5', group:'early', desc:'Words, simple phrases' },
+  { id:'1', label:'Grade 1', emoji:'🌟', cefr:'A1.1', file:'1.json',
+    color1:'#10B981', color2:'#059669', colorLight:'#D1FAE5', group:'elementary', desc:'Simple sentences' },
+  { id:'2', label:'Grade 2', emoji:'🚀', cefr:'A1.2', file:'2.json',
+    color1:'#06B6D4', color2:'#0891B2', colorLight:'#CFFAFE', group:'elementary', desc:'Short dialogues' },
+  { id:'3', label:'Grade 3', emoji:'📚', cefr:'A1.1+', file:'3.json',
+    color1:'#3B82F6', color2:'#2563EB', colorLight:'#DBEAFE', group:'elementary', desc:'50–80 word texts' },
+  { id:'4', label:'Grade 4', emoji:'🔍', cefr:'A1.2', file:'4.json',
+    color1:'#4F46E5', color2:'#4338CA', colorLight:'#E0E7FF', group:'elementary', desc:'80–120 word texts' },
+  { id:'5', label:'Grade 5', emoji:'💡', cefr:'A1.3', file:'5.json',
+    color1:'#7C3AED', color2:'#6D28D9', colorLight:'#EDE9FE', group:'elementary', desc:'100–150 word texts' },
+  { id:'6', label:'Grade 6', emoji:'🎯', cefr:'A2.1', file:'6.json',
+    color1:'#9333EA', color2:'#7E22CE', colorLight:'#F3E8FF', group:'elementary', desc:'120–180 word texts' },
+  { id:'7', label:'Grade 7', emoji:'🌍', cefr:'A2.2', file:'7.json',
+    color1:'#EC4899', color2:'#DB2777', colorLight:'#FCE7F3', group:'secondary', desc:'Narratives & opinions' },
+  { id:'8', label:'Grade 8', emoji:'⚡', cefr:'A2.3', file:'8.json',
+    color1:'#EF4444', color2:'#DC2626', colorLight:'#FEE2E2', group:'secondary', desc:'Analysis & discussion' },
+  { id:'9', label:'Grade 9', emoji:'🔬', cefr:'A2.4', file:'9.json',
+    color1:'#F97316', color2:'#EA580C', colorLight:'#FFEDD5', group:'secondary', desc:'Critical thinking' },
+  { id:'10', label:'Grade 10', emoji:'🏛️', cefr:'B1.1', file:'10.json',
+    color1:'#D97706', color2:'#B45309', colorLight:'#FEF3C7', group:'secondary', desc:'Arguments & research' },
+  { id:'11', label:'Grade 11', emoji:'🌐', cefr:'B1.2', file:'11.json',
+    color1:'#0D9488', color2:'#0F766E', colorLight:'#CCFBF1', group:'secondary', desc:'Complex analysis' },
+  { id:'12', label:'Grade 12', emoji:'🎓', cefr:'B1.3', file:'12.json',
+    color1:'#1D4ED8', color2:'#1E3A8A', colorLight:'#DBEAFE', group:'secondary', desc:'Academic English' },
+]
+
+const SKILL_ICONS = { Listening:'👂', Reading:'📖', Speaking:'🗣️', Writing:'✏️', Mediation:'🤝' }
+const SKILL_NAMES = ['Listening','Reading','Speaking','Writing','Mediation']
+
+/* ── STATE ────────────────────────────────────────────────────── */
+const state = {
+  currentGrade: null,
+  currentUser: null,       // ← logged-in student or guest
+  cloudUnlocks: {},        // ← unlocks from cloud per grade
+  gradeData: null,
+  scenarios: [],
+  openScenarioIdx: null,
+  selectedScenario: null,
+  selectedActivity: null,
+  progress: {},
+}
+
+/* ── LOCALSTORAGE ─────────────────────────────────────────────── */
+const LS_KEY = 'sb_progress_v2'
+function loadProgress() {
+  try { return JSON.parse(localStorage.getItem(LS_KEY)) || {} } catch { return {} }
+}
+function saveProgress() {
+  localStorage.setItem(LS_KEY, JSON.stringify(state.progress))
+}
+function getActKey(gradeId, scIdx, skillIdx) {
+  return `${gradeId}_${scIdx}_${skillIdx}`
+}
+function getActProgress(gradeId, scIdx, skillIdx) {
+  return state.progress[gradeId]?.[getActKey(gradeId,scIdx,skillIdx)] || null
+}
+function setActProgress(gradeId, scIdx, skillIdx, score, stars) {
+  if (!state.progress[gradeId]) state.progress[gradeId] = {}
+  state.progress[gradeId][getActKey(gradeId,scIdx,skillIdx)] = { score, stars, done: true, ts: Date.now() }
+  saveProgress()
+  // Fire-and-forget cloud save (non-blocking)
+  saveResultCloud(gradeId, scIdx, skillIdx, score, stars).then(unlock => {
+    if (unlock) state.pendingUnlock = unlock
+  })
+}
+
+/* ── UTILITIES ────────────────────────────────────────────────── */
+function showView(id) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'))
+  document.getElementById('view-'+id).classList.add('active')
+}
+function showLoading(txt='Loading…', icon='🌟') {
+  document.getElementById('loading-text').textContent = txt
+  document.getElementById('loader-icon').textContent = icon
+  document.getElementById('loading-overlay').classList.add('show')
+}
+function hideLoading() { document.getElementById('loading-overlay').classList.remove('show') }
+
+function scoreToStars(pct) {
+  if (pct >= 90) return 3
+  if (pct >= 70) return 2
+  if (pct >= 40) return 1
+  return 0
+}
+function starsStr(n) { return n > 0 ? '⭐'.repeat(n) : '—' }
+function calcPct(c, t) { return t ? Math.round(c/t*100) : 0 }
+
+/* ── GRADE CARD RENDERING ─────────────────────────────────────── */
+function renderGradeCards() {
+  const groups = { early: [], elementary: [], secondary: [] }
+  GRADES.forEach(g => groups[g.group].push(g))
+
+  renderGrid('grid-early', groups.early)
+  renderGrid('grid-elementary', groups.elementary)
+  renderGrid('grid-secondary', groups.secondary)
+}
+
+function renderGrid(containerId, grades) {
+  const el = document.getElementById(containerId)
+  el.innerHTML = grades.map(g => {
+    const progress = state.progress[g.id] || {}
+    const total = Object.keys(progress).length
+    return `<button class="grade-card" 
+      style="background:${g.colorLight};color:${g.color2}" 
+      onclick="selectGrade('${g.id}')">
+      <div class="gc-emoji">${g.emoji}</div>
+      <div class="gc-grade" style="color:${g.color2}">${g.label}</div>
+      <div class="gc-level">${g.cefr}</div>
+      <div class="gc-scenarios">${g.desc}</div>
+      ${total > 0 ? `<div style="margin-top:5px;font-size:11px;font-weight:700;color:${g.color1}">✓ ${total} ${t('activitiesDone')}</div>` : ''}
+    </button>`
+  }).join('')
+}
+
+/* ── GRADE SELECTION ──────────────────────────────────────────── */
+async function selectGrade(gradeId) {
+  const g = GRADES.find(x => x.id === gradeId)
+  if (!g) return
+  state.currentGrade = g
+  showLoading(`Loading ${g.label}…`, g.emoji)
+
+  try {
+    // Load cloud progress for this grade (parallel with JSON fetch)
+    const [, raw] = await Promise.all([
+      loadCloudProgress(state.currentUser?.id, gradeId),
+      fetch(g.file).then(r => r.json())
+    ])
+    state.gradeData = raw
+    state.scenarios = processScenarios(raw, g)
+    state.openScenarioIdx = null
+    renderGradeView()
+  } catch(e) {
+    console.error(e)
+    alert('Could not load content for ' + g.label + '. Make sure the JSON files are in the same folder.')
+  }
+  hideLoading()
+}
+
+/* ── JSON NORMALIZATION ───────────────────────────────────────── */
+function processScenarios(raw, grade) {
+  let scenarios = Array.isArray(raw) ? raw : (raw.scenarios || [])
+  return scenarios.map((sc, idx) => {
+    const title = sc.title || sc.scenario_name || sc.scenario || `Scenario ${idx+1}`
+    const themes = sc.themes || []
+    const themeTitles = Array.isArray(themes) ? themes.map(t => typeof t==='string' ? t : t.title || '') : []
+
+    // Skills
+    const skills = SKILL_NAMES.map((skill, si) => {
+      const prog = getActProgress(grade.id, idx, si)
+      return {
+        name: skill,
+        icon: SKILL_ICONS[skill],
+        progress: prog,
+        learningOutcome: extractOutcome(sc, skill)
+      }
+    })
+
+    // Completion
+    const done = skills.filter(s => s.progress?.done).length
+    const avgScore = skills.filter(s => s.progress?.done).reduce((a,s) => a+s.progress.score,0) / (done||1)
+
+    // Unlock logic: first always available, rest need 70%+ on previous
+    const prevDone = idx === 0 ? true : (() => {
+      const prev = state.scenarios?.[idx-1]
+      if (!prev) return true
+      return prev.skills.filter(s=>s.progress?.done).length >= 3 &&
+             prev.skills.filter(s=>s.progress?.done).reduce((a,s)=>a+s.progress.score,0) / (prev.skills.filter(s=>s.progress?.done).length||1) >= 70
+    })()
+
+    return { idx, title, themes: themeTitles, skills, done, avgScore, available: prevDone }
+  })
+}
+
+function extractOutcome(sc, skill) {
+  const lo = sc.standards_and_learning_outcomes
+  if (!lo) return `Practice your ${skill} skills.`
+  const s = lo[skill.toLowerCase()]
+  if (!s) return `Practice your ${skill} skills.`
+  if (typeof s === 'string') return s
+  if (s.general) return s.general
+  if (s.learning_outcomes?.length) return s.learning_outcomes[0]
+  if (s.specific?.length) return s.specific[0]
+  if (s.receptive) return s.receptive
+  if (Array.isArray(s)) return s[0]
+  return JSON.stringify(s).substring(0,120)
+}
+
+/* ── GRADE VIEW ───────────────────────────────────────────────── */
+function renderGradeView() {
+  const g = state.currentGrade
+  document.getElementById('grade-header').style.background = `linear-gradient(135deg,${g.color1},${g.color2})`
+  document.getElementById('grade-header-title').textContent = g.label
+  document.getElementById('grade-header-sub').textContent = `${g.cefr} · ${state.scenarios.length} ${t('scenariosLabel')}`
+  document.getElementById('grade-header-emoji').textContent = g.emoji
+
+  renderScenarioList()
+  showView('grade')
+}
+
+function renderScenarioList() {
+  const list = document.getElementById('scenario-list')
+  const g = state.currentGrade
+
+  list.innerHTML = state.scenarios.map((sc, idx) => {
+    const isOpen = state.openScenarioIdx === idx
+    const pct = calcPct(sc.done, 5)
+    const available = sc.available
+
+    return `<div class="scenario-card ${available?'accessible':'locked'}" id="sc-card-${idx}">
+      <div class="sc-header" onclick="${available ? `toggleScenario(${idx})` : ''}">
+        <div class="sc-num" style="background:${available ? g.color1 : 'var(--gray-400)'}">
+          ${idx+1}
+        </div>
+        <div class="sc-info">
+          <div class="sc-title">${sc.title}</div>
+          ${sc.themes.length ? `<div class="sc-themes">${sc.themes.slice(0,2).join(' · ')}</div>` : ''}
+          ${available ? `
+            <div class="sc-progress-row">
+              <div class="progress-track">
+                <div class="progress-fill" style="width:${pct}%;background:linear-gradient(90deg,${g.color1},${g.color2})"></div>
+              </div>
+              <span class="progress-pct">${pct}%</span>
+            </div>
+          ` : `<div class="lock-reason">${t('lockReason')}</div>`}
+        </div>
+        ${available ? `<span class="sc-badge">${sc.done>0?starsStr(scoreToStars(sc.avgScore)):''}</span>` : ''}
+        ${available ? `<span class="sc-chevron" style="color:${g.color1}">${isOpen?'▲':'▼'}</span>` : ''}
+      </div>
+      ${available && isOpen ? renderActivityList(sc, idx) : ''}
+    </div>`
+  }).join('')
+
+  // bind activity clicks
+  list.querySelectorAll('.act-row').forEach(row => {
+    row.addEventListener('click', () => {
+      const scIdx = +row.dataset.sc
+      const skillIdx = +row.dataset.skill
+      openActivity(scIdx, skillIdx)
+    })
+  })
+}
+
+function toggleScenario(idx) {
+  state.openScenarioIdx = state.openScenarioIdx === idx ? null : idx
+  renderScenarioList()
+}
+
+function renderActivityList(sc, scIdx) {
+  return `<div class="activity-list">
+    <button class="act-row" style="background:linear-gradient(135deg,${state.currentGrade.colorLight},#fff);border-bottom:1px solid var(--gray-200)" onclick="openStudyMode(${scIdx})">
+      <span class="act-icon">📖</span>
+      <span class="act-name" style="color:${state.currentGrade.color2};font-weight:800">${t('studyFirst')}</span>
+      <span class="act-result" style="color:${state.currentGrade.color1}">→</span>
+    </button>
+    ${sc.skills.map((skill, si) => {
+      const p = skill.progress
+      const done = p?.done
+      return `<button class="act-row ${done?'done':''}" data-sc="${scIdx}" data-skill="${si}">
+        <span class="act-icon">${skill.icon}</span>
+        <span class="act-name">${skill.name}</span>
+        <span class="act-result">${done ? (p.stars>0?starsStr(p.stars):'✓') : '→'}</span>
+      </button>`
+    }).join('')}
+  </div>`
+}
+
+/* ── ACTIVITY ─────────────────────────────────────────────────── */
+function openActivity(scIdx, skillIdx) {
+  const sc = state.scenarios[scIdx]
+  const skill = sc.skills[skillIdx]
+  state.selectedScenario = { sc, scIdx }
+  state.selectedActivity = { skill, skillIdx }
+
+  document.getElementById('act-skill-icon').textContent = skill.icon
+  document.getElementById('act-skill-name').textContent = skill.name
+
+  const body = document.getElementById('act-body')
+  body.innerHTML = ''
+
+  // Context tag
+  const tag = document.createElement('div')
+  tag.innerHTML = `<span class="context-tag" style="background:${state.currentGrade.color1}">${sc.title}</span>`
+  body.appendChild(tag)
+
+  // Previous result
+  if (skill.progress?.done) {
+    const prev = document.createElement('div')
+    prev.className = 'prev-result'
+    prev.innerHTML = `<span>${t('prevResult')}</span><span>${starsStr(skill.progress.stars)}</span><span>${Math.round(skill.progress.score)}%</span>`
+    body.appendChild(prev)
+  }
+
+  // Outcome
+  const out = document.createElement('div')
+  out.className = 'outcome-card'
+  out.innerHTML = `<div class="outcome-label">${t('learningObj')}</div><div class="outcome-text">${skill.learningOutcome}</div>`
+  body.appendChild(out)
+
+  // Try to render real content from embedded database
+  const contentKey = buildContentKey(state.currentGrade.id, scIdx, skillIdx)
+  const content = ACTIVITY_CONTENT[contentKey]
+
+  if (content) {
+    renderActivityContent(content, skill.name, body)
+  } else {
+    renderSliderFallback(skill, scIdx, skillIdx, body)
+  }
+
+  showView('activity')
+}
+
+function buildContentKey(gradeId, scIdx, skillIdx) {
+  // Map grade id → short prefix
+  const gradeMap = { 'pre-k':'prek', 'kinder':'k', '1':'g1','2':'g2','3':'g3','4':'g4','5':'g5','6':'g6','7':'g7','8':'g8','9':'g9','10':'g10','11':'g11','12':'g12' }
+  const skillMap = { 0:'listening',1:'reading',2:'speaking',3:'writing',4:'mediation' }
+  const gPrefix = gradeMap[gradeId] || gradeId
+  const theme = skillIdx < 5 ? 1 : 2
+  const actualSkillIdx = skillIdx % 5
+  return `${gPrefix}_s${scIdx+1}_t${theme}_${skillMap[actualSkillIdx]}`
+}
+
+/* ── SLIDER FALLBACK ──────────────────────────────────────────── */
+function renderSliderFallback(skill, scIdx, skillIdx, body) {
+  let scoreVal = skill.progress?.score ?? 70
+  const div = document.createElement('div')
+  div.innerHTML = `
+    <div class="score-section" style="background:#fff;border-radius:20px;padding:24px;box-shadow:var(--ssm)">
+      <div style="font-family:var(--fd);font-size:18px;font-weight:800;margin-bottom:16px">Complete this activity</div>
+      <p style="font-size:14px;color:var(--gray-600);margin-bottom:16px">Do the ${skill.name} activity with your class, then record your score below.</p>
+      <div style="text-align:center;margin-bottom:12px">
+        <span id="score-num" style="font-family:var(--fd);font-size:52px;font-weight:800;color:${state.currentGrade.color1}">${Math.round(scoreVal)}%</span>
+        <div id="score-stars" style="font-size:28px">${starsStr(scoreToStars(scoreVal))}</div>
+      </div>
+      <input type="range" min="0" max="100" value="${scoreVal}" id="score-slider" style="width:100%;accent-color:${state.currentGrade.color1};margin-bottom:12px">
+      <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--gray-400);font-weight:700;margin-bottom:16px">
+        <span>⭐ 40%</span><span>⭐⭐ 70%</span><span>⭐⭐⭐ 90%</span>
+      </div>
+      <div class="error-box" id="fb-error"></div>
+      <button class="btn-primary" id="btn-submit-slider" style="background:linear-gradient(135deg,${state.currentGrade.color1},${state.currentGrade.color2})">${t('saveResult')}</button>
+    </div>`
+  body.appendChild(div)
+
+  const slider = div.querySelector('#score-slider')
+  slider.addEventListener('input', e => {
+    scoreVal = +e.target.value
+    div.querySelector('#score-num').textContent = Math.round(scoreVal)+'%'
+    div.querySelector('#score-stars').textContent = starsStr(scoreToStars(scoreVal))
+  })
+  div.querySelector('#btn-submit-slider').addEventListener('click', () => {
+    const stars = scoreToStars(scoreVal)
+    setActProgress(state.currentGrade.id, scIdx, skillIdx, scoreVal, stars)
+    refreshAfterSubmit(scoreVal, stars, scIdx, skillIdx)
+  })
+}
+
+/* ── ACTIVITY CONTENT ENGINE ─────────────────────────────────── */
+function renderActivityContent(content, skillName, body) {
+  const { scIdx, skillIdx } = state.selectedActivity
+  const scIdxRef = state.selectedScenario.scIdx
+
+  if (content.type === 'listening') renderListening(content, body, scIdxRef, skillIdx)
+  else if (content.type === 'reading') renderReading(content, body, scIdxRef, skillIdx)
+  else if (content.type === 'speaking') renderSpeaking(content, body, scIdxRef, skillIdx)
+  else if (content.type === 'writing') renderWriting(content, body, scIdxRef, skillIdx)
+  else if (content.type === 'mediation') renderMediation(content, body, scIdxRef, skillIdx)
+}
+
+function showResult(score, body, scIdx, skillIdx) {
+  const stars = scoreToStars(score)
+  setActProgress(state.currentGrade.id, scIdx, skillIdx, score, stars)
+  state.scenarios = processScenarios(state.gradeData, state.currentGrade)
+
+  const msgs = ['', t('keepTrying'), t('goodEffort'), t('wellDone'), t('excellent')]
+  const res = document.createElement('div')
+  res.className = 'result-section'
+  res.innerHTML = `
+    <div class="result-stars-big">${stars>0?starsStr(stars):'😊'}</div>
+    <div class="result-score" style="color:${state.currentGrade.color1}">${Math.round(score)}%</div>
+    <div class="result-msg">${msgs[stars] || ''}</div>
+    <button class="btn-primary" style="background:linear-gradient(135deg,${state.currentGrade.color1},${state.currentGrade.color2});margin-top:8px" onclick="afterResult()">${t('backScenarios')}</button>`
+  body.appendChild(res)
+  res.scrollIntoView({ behavior:'smooth', block:'center' })
+  orbitCelebrate(score, stars)
+}
+
+function afterResult() {
+  state.scenarios = processScenarios(state.gradeData, state.currentGrade)
+  renderScenarioList()
+  showView('grade')
+}
+
+function refreshAfterSubmit(score, stars, scIdx, skillIdx) {
+  state.scenarios = processScenarios(state.gradeData, state.currentGrade)
+  const body = document.getElementById('act-body')
+  const msgs = ['', t('keepTrying'), t('goodEffort'), t('wellDone'), t('excellent')]
+  const res = document.createElement('div')
+  res.className = 'result-section'
+  res.innerHTML = `
+    <div class="result-stars-big">${stars>0?starsStr(stars):'😊'}</div>
+    <div class="result-score" style="color:${state.currentGrade.color1}">${Math.round(score)}%</div>
+    <div class="result-msg">${msgs[stars] || ''}</div>
+    <button class="btn-primary" style="background:linear-gradient(135deg,${state.currentGrade.color1},${state.currentGrade.color2});margin-top:8px" onclick="afterResult()">${t('backScenarios')}</button>`
+  body.appendChild(res)
+  res.scrollIntoView({ behavior:'smooth', block:'center' })
+  orbitCelebrate(score, stars)
+}
+
+/* ── LISTENING ACTIVITY ───────────────────────────────────────── */
+function renderListening(c, body, scIdx, skillIdx) {
+  const answers = new Array(c.questions.length).fill(null)
+  let submitted = false
+
+  const div = document.createElement('div')
+  div.innerHTML = `
+    <div class="act-lang-banner">${t('listenInstr')}</div>
+    <div id="lq-container"></div>
+    <div class="act-submit-row">
+      <div class="error-box" id="l-err"></div>
+      <button class="btn-primary" id="l-submit" style="background:linear-gradient(135deg,${state.currentGrade.color1},${state.currentGrade.color2})">${t('checkAnswers')}</button>
+    </div>`
+  body.appendChild(div)
+
+  function renderQs() {
+    document.getElementById('lq-container').innerHTML = c.questions.map((q,i) => `
+      <div class="act-question">
+        <button class="act-listen-btn" onclick="speakSentence(${i})" id="play-btn-${i}">
+          🔊 ${t('listenSentence')} ${i+1}
+        </button>
+        <div class="act-question-text">${i+1}. ${q.q}</div>
+        <div class="act-options">
+          ${q.opts.map((o,j)=>`<button class="act-option ${answers[i]===j?'selected':''}" onclick="pickListen(${i},${j})">${o}</button>`).join('')}
+        </div>
+      </div>`).join('')
+
+    window._listenSentences = c.sentences
+    window.speakSentence = (i) => {
+      const btn = document.getElementById('play-btn-'+i)
+      if (btn) { btn.classList.add('playing'); btn.textContent='🔊 Playing…' }
+      speakText(c.sentences[i], () => {
+        if (btn) { btn.classList.remove('playing'); btn.textContent=`🔊 Listen again (${i+1})` }
+      })
+    }
+    window.pickListen = (qi, oi) => {
+      if (submitted) return
+      answers[qi] = oi
+      renderQs()
+    }
+  }
+  renderQs()
+
+  document.getElementById('l-submit').addEventListener('click', () => {
+    if (answers.includes(null)) {
+      const e=document.getElementById('l-err'); e.textContent=t('answerAll'); e.classList.add('show'); return
+    }
+    submitted = true
+    // Show correct/wrong
+    document.querySelectorAll('#lq-container .act-question').forEach((qEl, i) => {
+      qEl.querySelectorAll('.act-option').forEach((btn, j) => {
+        btn.classList.remove('selected')
+        if (j === c.questions[i].ans) btn.classList.add('correct')
+        else if (j === answers[i] && answers[i] !== c.questions[i].ans) btn.classList.add('wrong')
+        btn.onclick = null
+      })
+    })
+    document.getElementById('l-submit').style.display='none'
+    const correct = answers.filter((a,i)=>a===c.questions[i].ans).length
+    const score = Math.round(correct/c.questions.length*100)
+    showResult(score, body, scIdx, skillIdx)
+  })
+}
+
+/* ── READING ACTIVITY ─────────────────────────────────────────── */
+function renderReading(c, body, scIdx, skillIdx) {
+  const answers = new Array(c.questions.length).fill(null)
+  let submitted = false
+
+  const div = document.createElement('div')
+  div.innerHTML = `
+    <div class="act-lang-banner">${t('readInstr')}</div>
+    <div class="act-text-block">${c.text.replace(/\n/g,'<br>')}</div>
+    <button class="act-listen-btn" onclick="speakText(this.dataset.text)" data-text="${c.text.replace(/"/g,'&quot;')}" style="background:${state.currentGrade.color1}">${t('readAloud')}</button>
+    <div id="rq-container"></div>
+    <div class="act-submit-row">
+      <div class="error-box" id="r-err"></div>
+      <button class="btn-primary" id="r-submit" style="background:linear-gradient(135deg,${state.currentGrade.color1},${state.currentGrade.color2})">${t('checkAnswers')}</button>
+    </div>`
+  body.appendChild(div)
+
+  function renderQs() {
+    document.getElementById('rq-container').innerHTML = c.questions.map((q,i) => `
+      <div class="act-question">
+        <div class="act-question-text">${i+1}. ${q.q}</div>
+        <div class="act-options">
+          ${q.opts.map((o,j)=>`<button class="act-option ${answers[i]===j?'selected':''}" onclick="pickRead(${i},${j})">${o}</button>`).join('')}
+        </div>
+      </div>`).join('')
+    window.pickRead = (qi,oi) => { if(submitted)return; answers[qi]=oi; renderQs() }
+  }
+  renderQs()
+
+  document.getElementById('r-submit').addEventListener('click', () => {
+    if (answers.includes(null)) {
+      const e=document.getElementById('r-err'); e.textContent=t('answerAll'); e.classList.add('show'); return
+    }
+    submitted = true
+    document.querySelectorAll('#rq-container .act-question').forEach((qEl, i) => {
+      qEl.querySelectorAll('.act-option').forEach((btn, j) => {
+        btn.classList.remove('selected')
+        if (j === c.questions[i].ans) btn.classList.add('correct')
+        else if (j === answers[i] && answers[i] !== c.questions[i].ans) btn.classList.add('wrong')
+        btn.onclick = null
+      })
+    })
+    document.getElementById('r-submit').style.display='none'
+    const correct = answers.filter((a,i)=>a===c.questions[i].ans).length
+    showResult(Math.round(correct/c.questions.length*100), body, scIdx, skillIdx)
+  })
+}
+
+/* ── SPEAKING ACTIVITY ────────────────────────────────────────── */
+function renderSpeaking(c, body, scIdx, skillIdx) {
+  let taskIdx = 0
+  const selfEval = new Array(c.criteria.length).fill(null)
+  let recorded = false
+
+  const container = document.createElement('div')
+  container.id = 'speak-container'
+  body.appendChild(container)
+
+  function renderTask() {
+    const tk = c.tasks[taskIdx]
+    container.innerHTML = `
+      <div class="act-lang-banner">${t('speakInstr')}</div>
+      <div class="progress-dots">
+        ${c.tasks.map((_,i)=>`<div class="dot ${i<taskIdx?'done':i===taskIdx?'active':''}"></div>`).join('')}
+      </div>
+      <div class="speak-task">
+        <div class="speak-task-label">${t('task')} ${taskIdx+1} ${t('of')} ${c.tasks.length}</div>
+        <div style="font-size:36px;text-align:center;margin:8px 0">${tk.img}</div>
+        <div class="speak-task-text">${tk.prompt}</div>
+      </div>
+      <div class="speak-model">💡 <em>"${tk.model}"</em></div>
+      <button class="act-listen-btn" onclick="speakText('${tk.model.replace(/'/g,"\\'")}')" style="background:${state.currentGrade.color1}">${t('hearModel')}</button>
+      <button class="speak-record-btn" id="rec-btn" onclick="handleRecord()">${t('tapRecord')}</button>
+      <div id="rec-status" style="text-align:center;font-size:13px;color:var(--gray-400);margin-bottom:12px"></div>
+      ${taskIdx===c.tasks.length-1&&recorded ? renderSelfEvalHtml(c.criteria,selfEval) : ''}
+      <button class="btn-secondary" id="btn-next-task" style="display:${recorded?'block':'none'}" onclick="nextTask()">
+        ${taskIdx<c.tasks.length-1?t('nextTask'):t('finishEval')}
+      </button>`
+
+    window.handleRecord = () => {
+      const btn=document.getElementById('rec-btn'), st=document.getElementById('rec-status')
+      if(btn.classList.contains('recording')) {
+        btn.classList.remove('recording'); btn.classList.add('done')
+        btn.textContent=t('recorded'); st.textContent=t('greatJob')
+        recorded=true
+        document.getElementById('btn-next-task').style.display='block'
+      } else {
+        if(btn.classList.contains('done')){ btn.classList.remove('done') }
+        btn.classList.add('recording'); btn.textContent=t('tapStop'); st.textContent=t('recordStatus')
+      }
+    }
+
+    window.nextTask = () => {
+      if (taskIdx < c.tasks.length-1) { taskIdx++; recorded=false; renderTask() }
+      else {
+        // show self eval at the end
+        const evalContainer = document.createElement('div')
+        evalContainer.innerHTML = renderSelfEvalHtml(c.criteria, selfEval)
+        container.appendChild(evalContainer)
+        evalContainer.querySelectorAll('.self-eval-btn').forEach(b => {
+          b.addEventListener('click', () => {
+            const i=+b.dataset.idx, v=b.dataset.val==='1'
+            selfEval[i]=v; renderSelfEvalBtns(evalContainer,c.criteria,selfEval)
+          })
+        })
+        evalContainer.querySelector('#btn-eval-submit')?.addEventListener('click', submitEval)
+        document.getElementById('btn-next-task').style.display='none'
+      }
+    }
+
+    if (taskIdx===c.tasks.length-1&&recorded) {
+      bindSelfEval(container, c.criteria, selfEval)
+    }
+  }
+
+  function renderSelfEvalHtml(criteria, vals) {
+    return `<div style="margin-top:16px">
+      <div class="self-eval-title">${t('howDidYou')}</div>
+      ${criteria.map((cr,i)=>`
+        <div class="self-eval-item">
+          <div class="self-eval-text">${cr}</div>
+          <div class="self-eval-btns">
+            <button class="self-eval-btn ${vals[i]===true?'yes':''}" data-idx="${i}" data-val="1">${t('yesBtn')}</button>
+            <button class="self-eval-btn ${vals[i]===false?'no':''}" data-idx="${i}" data-val="0">${t('noBtn')}</button>
+          </div>
+        </div>`).join('')}
+      <div class="error-box" id="eval-err"></div>
+      <button class="btn-primary" id="btn-eval-submit" style="margin-top:14px;background:linear-gradient(135deg,${state.currentGrade.color1},${state.currentGrade.color2})">${t('submitEval')}</button>
+    </div>`
+  }
+
+  function renderSelfEvalBtns(container, criteria, vals) {
+    criteria.forEach((_,i) => {
+      container.querySelectorAll('.self-eval-btn').forEach(b => {
+        if (+b.dataset.idx===i) {
+          b.classList.remove('yes','no')
+          if (vals[i]===true && b.dataset.val==='1') b.classList.add('yes')
+          if (vals[i]===false && b.dataset.val==='0') b.classList.add('no')
+        }
+      })
+    })
+  }
+
+  function bindSelfEval(el, criteria, vals) {
+    el.querySelectorAll('.self-eval-btn').forEach(b => {
+      b.addEventListener('click', () => {
+        vals[+b.dataset.idx] = b.dataset.val==='1'
+        renderSelfEvalBtns(el,criteria,vals)
+      })
+    })
+    el.querySelector('#btn-eval-submit')?.addEventListener('click', submitEval)
+  }
+
+  function submitEval() {
+    if (selfEval.includes(null)) {
+      const e=document.getElementById('eval-err'); if(e){e.textContent=t('evalAll');e.classList.add('show')} return
+    }
+    const yes=selfEval.filter(v=>v===true).length
+    showResult(Math.round(yes/c.criteria.length*100), body, scIdx, skillIdx)
+  }
+
+  renderTask()
+}
+
+/* ── WRITING ACTIVITY ─────────────────────────────────────────── */
+function renderWriting(c, body, scIdx, skillIdx) {
+  const div = document.createElement('div')
+  div.innerHTML = `
+    <div class="act-lang-banner">${t('writeInstr')}</div>
+    ${c.prompts.map((p,i)=>`
+      <div class="act-question">
+        <div class="write-prompt">✏️ ${p.prompt}</div>
+        <div class="speak-model">${t('exampleLabel')} <em>"${p.model}"</em></div>
+        <textarea class="write-area" id="wr-${i}" placeholder="${p.placeholder}"></textarea>
+      </div>`).join('')}
+    <div style="margin-top:12px">
+      <div class="self-eval-title">${t('checkWriting')}</div>
+      <div class="write-checklist">
+        ${c.checklist.map((item,i)=>`
+          <div class="checklist-item">
+            <input type="checkbox" class="checklist-cb" id="wc-${i}">
+            <label for="wc-${i}">${item}</label>
+          </div>`).join('')}
+      </div>
+      <div class="error-box" id="w-err"></div>
+      <button class="btn-primary" id="w-submit" style="background:linear-gradient(135deg,${state.currentGrade.color1},${state.currentGrade.color2})">${t('submitWriting')}</button>
+    </div>`
+  body.appendChild(div)
+
+  document.getElementById('w-submit').addEventListener('click', () => {
+    const empty = c.prompts.some((_,i)=>!document.getElementById('wr-'+i).value.trim())
+    if (empty) { const e=document.getElementById('w-err');e.textContent=t('writeSomething');e.classList.add('show');return }
+    const checked = c.checklist.filter((_,i)=>document.getElementById('wc-'+i).checked).length
+    showResult(Math.round(checked/c.checklist.length*100), body, scIdx, skillIdx)
+  })
+}
+
+/* ── MEDIATION ACTIVITY ───────────────────────────────────────── */
+function renderMediation(c, body, scIdx, skillIdx) {
+  const answers = new Array(c.situations.length).fill(null)
+  let submitted = false
+
+  const div = document.createElement('div')
+  div.innerHTML = `
+    <div class="act-lang-banner">${t('medInstr')}</div>
+    <div id="mq-container"></div>
+    <div class="act-submit-row">
+      <div class="error-box" id="m-err"></div>
+      <button class="btn-primary" id="m-submit" style="background:linear-gradient(135deg,${state.currentGrade.color1},${state.currentGrade.color2})">${t('checkAnswers')}</button>
+    </div>`
+  body.appendChild(div)
+
+  function renderQs() {
+    document.getElementById('mq-container').innerHTML = c.situations.map((s,i)=>`
+      <div class="act-question">
+        <div class="med-situation">
+          <div class="med-situation-label">${t('situation')} ${i+1}</div>
+          <div class="med-situation-text">${s.notice}</div>
+        </div>
+        <div class="act-question-text">${s.q}</div>
+        <div class="act-options">
+          ${s.opts.map((o,j)=>`<button class="act-option ${answers[i]===j?'selected':''}" onclick="pickMed(${i},${j})">${o}</button>`).join('')}
+        </div>
+      </div>`).join('')
+    window.pickMed=(qi,oi)=>{ if(submitted)return; answers[qi]=oi; renderQs() }
+  }
+  renderQs()
+
+  document.getElementById('m-submit').addEventListener('click', () => {
+    if (answers.includes(null)) { const e=document.getElementById('m-err');e.textContent=t('answerAllSit');e.classList.add('show');return }
+    submitted=true
+    document.querySelectorAll('#mq-container .act-question').forEach((qEl,i)=>{
+      qEl.querySelectorAll('.act-option').forEach((btn,j)=>{
+        btn.classList.remove('selected')
+        if(j===c.situations[i].ans)btn.classList.add('correct')
+        else if(j===answers[i]&&answers[i]!==c.situations[i].ans)btn.classList.add('wrong')
+        btn.onclick=null
+      })
+    })
+    document.getElementById('m-submit').style.display='none'
+    const correct=answers.filter((a,i)=>a===c.situations[i].ans).length
+    showResult(Math.round(correct/c.situations.length*100), body, scIdx, skillIdx)
+  })
+}
+
+/* ── WEB SPEECH API ───────────────────────────────────────────── */
+function speakText(text, onEnd) {
+  if (!('speechSynthesis' in window)) { alert('Your browser does not support text-to-speech. Try Chrome or Edge.'); return }
+  window.speechSynthesis.cancel()
+  const utt = new SpeechSynthesisUtterance(typeof text==='string' ? text : text.dataset?.text || '')
+  utt.lang = 'en-US'
+  utt.rate = 0.85
+  utt.pitch = 1.0
+  if (onEnd) utt.onend = onEnd
+  window.speechSynthesis.speak(utt)
+}
+
+/* ── STUDY MODE ENGINE ────────────────────────────────────────── */
+function openStudyMode(scIdx) {
+  const sc = state.scenarios[scIdx]
+  const g = state.currentGrade
+  state.openScenarioIdx = scIdx
+
+  // Build header
+  document.getElementById('study-scenario-title').textContent = sc.title
+  document.getElementById('study-header').style.background = `linear-gradient(135deg,${g.color1},${g.color2})`
+  document.getElementById('study-header-emoji').textContent = g.emoji
+
+  // Build body from JSON data
+  const raw = state.gradeData
+  const scenarios = Array.isArray(raw) ? raw : (raw.scenarios || [])
+  const scRaw = scenarios[scIdx]
+
+  const body = document.getElementById('study-body')
+  body.innerHTML = ''
+
+  // ── VOCABULARY ────────────────────────────────────────
+  const vocab = extractVocab(scRaw)
+  if (vocab.length) {
+    const sec = document.createElement('div')
+    sec.innerHTML = `<div class="study-section-title">${t('vocabulary')}</div>
+      <div class="flashcard-grid" id="fc-grid"></div>`
+    body.appendChild(sec)
+
+    const grid = sec.querySelector('#fc-grid')
+    vocab.slice(0,12).forEach((w, i) => {
+      const card = document.createElement('div')
+      card.className = 'flashcard'
+      card.innerHTML = `<div class="flashcard-inner">
+        <div class="flashcard-front">
+          <div class="fc-word">${w.word}</div>
+          <div class="fc-hint" style="color:${g.color1}">${t('tapFlip')}</div>
+        </div>
+        <div class="flashcard-back" style="background:linear-gradient(135deg,${g.color1},${g.color2})">
+          <div class="fc-translation">${w.es || '—'}</div>
+          <button class="pronunc-btn" style="margin-top:8px;background:rgba(255,255,255,.3)" onclick="event.stopPropagation();speakText('${w.word.replace(/'/g,"\\'")}')">🔊</button>
+        </div>
+      </div>`
+      card.addEventListener('click', () => card.classList.toggle('flipped'))
+      grid.appendChild(card)
+    })
+  }
+
+  // ── GRAMMAR STRUCTURES ────────────────────────────────
+  const grammar = extractGrammar(scRaw)
+  if (grammar.length) {
+    const sec = document.createElement('div')
+    sec.innerHTML = `<div class="study-section-title">${t('grammar')}</div>
+      <div class="grammar-chips">${grammar.map(g =>
+        `<div class="grammar-chip" onclick="speakText('${g.replace(/'/g,"\\'")}')">${g} 🔊</div>`
+      ).join('')}</div>`
+    body.appendChild(sec)
+  }
+
+  // ── PRONUNCIATION FOCUS ───────────────────────────────
+  const pronunc = extractPronunc(scRaw)
+  if (pronunc.length) {
+    const sec = document.createElement('div')
+    sec.innerHTML = `<div class="study-section-title">${t('pronunciation')}</div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        ${pronunc.slice(0,6).map(p => `
+          <div class="pronunc-row">
+            <div class="pronunc-word">${p}</div>
+            <button class="pronunc-btn" style="background:${g.color1}" onclick="speakText('${p.replace(/'/g,"\\'")}')">🔊</button>
+          </div>`).join('')}
+      </div>`
+    body.appendChild(sec)
+  }
+
+  // ── CTA ───────────────────────────────────────────────
+  const cta = document.createElement('div')
+  cta.className = 'study-cta'
+  cta.style.background = `linear-gradient(135deg,${g.color1},${g.color2})`
+  cta.innerHTML = `
+    <div class="study-cta-title">${t('ctaTitle')}</div>
+    <div class="study-cta-sub">${t('ctaSub')}</div>
+    <button class="btn-primary" style="background:rgba(255,255,255,.25);backdrop-filter:blur(4px)" onclick="backFromStudy()">
+      ${t('goToActivities')}
+    </button>`
+  body.appendChild(cta)
+
+  showView('study')
+}
+
+function backFromStudy() {
+  renderScenarioList()
+  showView('grade')
+}
+
+/* Vocabulary extractor — handles multiple JSON formats */
+function extractVocab(sc) {
+  const cc = sc?.communicative_competences
+  const vocab = cc?.linguistic?.vocabulary || cc?.Linguistic?.vocabulary || []
+  if (Array.isArray(vocab) && typeof vocab[0] === 'string') {
+    return vocab.slice(0,12).map(w => ({ word: w, es: '' }))
+  }
+  if (Array.isArray(vocab) && typeof vocab[0] === 'object') {
+    return vocab.slice(0,12).map(v => ({ word: v.word || v.term || '', es: v.translation || v.traduccion || '' }))
+  }
+  // Try scope_sequence fallback — just return empty, handled by themes
+  return []
+}
+
+/* Grammar extractor */
+function extractGrammar(sc) {
+  const cc = sc?.communicative_competences
+  const g = cc?.linguistic?.grammar || cc?.Linguistic?.grammar || []
+  if (Array.isArray(g)) return g.slice(0,8).map(s => typeof s === 'string' ? s : '')
+  return []
+}
+
+/* Pronunciation extractor */
+function extractPronunc(sc) {
+  const cc = sc?.communicative_competences
+  const p = cc?.linguistic?.pronunciation || cc?.Linguistic?.pronunciation || []
+  if (Array.isArray(p)) return p.slice(0,6).map(s => {
+    // Extract the word from strings like "/p/ in 'pencil', /b/ in 'book'"
+    const match = s.match(/'([^']+)'/g)
+    return match ? match[0].replace(/'/g,'') : s.split(',')[0].replace(/^.*\/\s*/,'').trim()
+  }).filter(Boolean)
+  return []
+}
+function showHome() {
+  // Update home header with user info
+  const user = state.currentUser
+  const sub = document.querySelector('[data-i="homeSubtitle"]')
+  if (user && !user.guest) {
+    sub.innerHTML = `👤 ${user.name} &nbsp;·&nbsp; <button onclick="doLogout()" style="color:rgba(255,255,255,.7);font-size:12px;font-weight:700;text-decoration:underline">Salir</button>`
+  } else if (user?.guest) {
+    sub.innerHTML = `👤 Guest &nbsp;·&nbsp; <button onclick="showView('login')" style="color:rgba(255,255,255,.7);font-size:12px;font-weight:700;text-decoration:underline">Login</button>`
+  } else {
+    sub.textContent = t('homeSubtitle')
+  }
+  showView('home')
+  renderGradeCards()
+}
+
+function doLogout() {
+  clearSession()
+  state.progress = {}
+  state.scenarios = []
+  state.currentGrade = null
+  document.getElementById('login-username').value = ''
+  document.getElementById('login-pin').value = ''
+  document.getElementById('login-step-pin').style.display = 'none'
+  document.getElementById('login-step-user').style.display = 'block'
+  showView('login')
+}
+
+document.getElementById('btn-back-home').addEventListener('click', showHome)
+document.getElementById('btn-back-activity').addEventListener('click', () => {
+  renderScenarioList()
+  showView('grade')
+})
+document.getElementById('btn-unlock-continue').addEventListener('click', () => {
+  renderScenarioList(); showView('grade')
+})
+
+/* ── MASCOT ───────────────────────────────────────────────────── */
+const ORBIT_MSGS = {
+  perfect: [
+    'Perfect score! 🎉 / ¡Puntaje perfecto!',
+    'Amazing! 🌟 / ¡Increíble!',
+    'You nailed it! ✨ / ¡Lo lograste!'
+  ],
+  good: [
+    'Great job! 💪 / ¡Muy bien hecho!',
+    'Keep it up! ⭐ / ¡Sigue así!',
+    'Well done! 🏆 / ¡Excelente trabajo!'
+  ],
+  ok: [
+    'Good effort! 📖 / ¡Buen intento!',
+    'Almost there! 🎯 / ¡Casi lo logras!',
+    'Try again soon! 💡 / ¡Vuelve a intentarlo!'
+  ],
+}
+
+function orbitCelebrate(score, stars) {
+  const msgs = score >= 95 ? ORBIT_MSGS.perfect : stars >= 2 ? ORBIT_MSGS.good : ORBIT_MSGS.ok
+  const msg = msgs[Math.floor(Math.random() * msgs.length)]
+  const bubble = document.getElementById('orbit-bubble')
+  bubble.textContent = msg
+  bubble.classList.add('show')
+  setTimeout(() => bubble.classList.remove('show'), 3000)
+}
+
+function orbitSay(msgEN, msgES) {
+  const bubble = document.getElementById('orbit-bubble')
+  bubble.textContent = `${msgEN} / ${msgES}`
+  bubble.classList.add('show')
+  setTimeout(() => bubble.classList.remove('show'), 2500)
+}
+
+/* ── UNLOCK VIEW i18n ─────────────────────────────────────────── */
+function updateUnlockView() {
+  const title = document.querySelector('.unlock-title')
+  const msg   = document.querySelector('.unlock-msg')
+  const btn   = document.getElementById('btn-unlock-continue')
+  if (title) title.textContent = t('unlockTitle')
+  if (msg)   msg.textContent   = t('unlockMsg')
+  if (btn)   btn.textContent   = t('letsGo')
+}
+
+/* ── TEACHER DASHBOARD ENGINE ────────────────────────────────── */
+const TEACHER_SESSION_KEY = 'sb_eng_teacher'
+let teacherState = {
+  teacher: null,
+  classes: [],
+  students: [],
+  filterGrade: null,
+  activeTab: 'progress'
+}
+
+function saveTeacherSession(data) {
+  localStorage.setItem(TEACHER_SESSION_KEY, JSON.stringify(data))
+  teacherState.teacher = data
+}
+function loadTeacherSession() {
+  try { return JSON.parse(localStorage.getItem(TEACHER_SESSION_KEY)) } catch { return null }
+}
+function clearTeacherSession() { localStorage.removeItem(TEACHER_SESSION_KEY); teacherState.teacher = null }
+
+/* ── TEACHER LOGIN ────────────────────────────────────────────── */
+// Hooked into the same login flow — detects teacher by role field
+async function tryTeacherLogin(username, pin) {
+  const result = await sbRpc('sb_teacher_login', { p_username: username, p_pin: pin })
+  return result
+}
+
+/* ── LOAD TEACHER DATA ────────────────────────────────────────── */
+async function tLoadClasses() {
+  const r = await sbRpc('sb_get_classes', { p_teacher_email: teacherState.teacher.email })
+  if (!r.success) return
+  teacherState.classes = r.classes || []
+  // Populate class dropdown in add-student form
+  const sel = document.getElementById('new-class')
+  if (sel) {
+    sel.innerHTML = teacherState.classes.map(c =>
+      `<option value="${c.id}">${c.name} (Grade ${c.grade_id})</option>`
+    ).join('') || '<option value="">— Sin clase —</option>'
+  }
+}
+
+async function tLoadData() {
+  showLoading('Cargando datos…', '📊')
+  const r = await sbRpc('sb_list_students', {
+    p_teacher_email: teacherState.teacher.email,
+    p_grade_id: teacherState.filterGrade || null
+  })
+  hideLoading()
+  if (!r.success) { alert('Error: ' + r.error); return }
+
+  teacherState.students = r.students || []
+  tRenderProgress()
+  tRenderStudents()
+}
+
+/* ── RENDER PROGRESS TAB ──────────────────────────────────────── */
+function tRenderProgress() {
+  const sts = teacherState.students
+  const total = sts.length
+  const avgScore = total ? Math.round(sts.reduce((a,s) => a + (+s.avg_score||0), 0) / total) : 0
+  const totalDone = sts.reduce((a,s) => a + (+s.done||0), 0)
+  const atRisk = sts.filter(s => s.at_risk)
+
+  document.getElementById('t-stat-total').textContent = total
+  document.getElementById('t-stat-avg').textContent   = avgScore + '%'
+  document.getElementById('t-stat-done').textContent  = totalDone
+  document.getElementById('t-stat-risk').textContent  = atRisk.length
+  document.getElementById('t-progress-count').textContent = total
+
+  // At-risk section
+  const riskSec = document.getElementById('t-risk-section')
+  document.getElementById('t-risk-count').textContent = atRisk.length
+  riskSec.style.display = atRisk.length ? 'block' : 'none'
+  document.getElementById('t-risk-list').innerHTML = atRisk.map(s =>
+    tStudentRow(s, true)
+  ).join('') || '<div class="t-empty">Sin estudiantes en riesgo 🎉</div>'
+
+  // All students
+  document.getElementById('t-progress-list').innerHTML = total
+    ? sts.map(s => tStudentRow(s, false)).join('')
+    : '<div class="t-empty">No hay estudiantes aún. Crea uno en la pestaña ➕</div>'
+}
+
+function tStudentRow(s, compact) {
+  const score = +s.avg_score || 0
+  const color = score >= 80 ? '#10B981' : score >= 60 ? '#4F46E5' : score >= 40 ? '#F59E0B' : '#EF4444'
+  const initials = s.name.split(' ').slice(0,2).map(w=>w[0]?.toUpperCase()).join('')
+  const avatarColor = ['#4F46E5','#10B981','#EC4899','#F59E0B','#06B6D4','#9333EA']
+    [s.name.charCodeAt(0) % 6]
+
+  const unlockBtns = !compact ? `
+    <div class="t-row-actions">
+      <button class="t-btn-sm t-btn-unlock" onclick="tUnlockDialog('${s.id}','${s.name.replace(/'/g,"\\'")}','${s.assigned_grade}')">🔓 Desbloquear</button>
+      <button class="t-btn-sm t-btn-delete" onclick="tDeleteStudent('${s.id}','${s.name.replace(/'/g,"\\'")}')">🗑 Eliminar</button>
+    </div>` : ''
+
+  return `<div class="t-st-row">
+    <div class="t-avatar" style="background:${avatarColor}">${initials}</div>
+    <div class="t-st-info">
+      <div class="t-st-name">${s.name}</div>
+      <div class="t-st-meta">@${s.username} · Grade ${s.assigned_grade} · ${s.done} actividades</div>
+      ${s.at_risk ? '<span class="t-pill risk">⚠ En riesgo</span>' : ''}
+      <div class="t-mini-bar"><div class="t-mini-fill" style="width:${Math.min(score,100)}%;background:${color}"></div></div>
+      ${unlockBtns}
+    </div>
+    <div class="t-st-right">
+      <div class="t-st-pct" style="color:${color}">${score}%</div>
+    </div>
+  </div>`
+}
+
+/* ── RENDER STUDENTS TAB ──────────────────────────────────────── */
+function tRenderStudents() {
+  const sts = teacherState.students
+  document.getElementById('t-students-count').textContent = sts.length
+  document.getElementById('t-students-list').innerHTML = sts.length
+    ? sts.map(s => tStudentRow(s, false)).join('')
+    : '<div class="t-empty">No hay estudiantes. Usa ➕ para crear.</div>'
+}
+
+/* ── GRADE FILTER CHIPS ───────────────────────────────────────── */
+function tRenderFilters(containerId) {
+  const grades = ['all','3','4','5','6','7','8','9','10','11','12']
+  const labels = {all:'Todos'}
+  return grades.map(g => {
+    const active = (teacherState.filterGrade === null && g==='all') ||
+                   teacherState.filterGrade === g
+    return `<button class="t-filter-chip ${active?'active':''}"
+      onclick="tSetFilter('${g}','${containerId}')">${g==='all'?'Todos':'Grade '+g}</button>`
+  }).join('')
+}
+
+function tSetFilter(grade, containerId) {
+  teacherState.filterGrade = grade === 'all' ? null : grade
+  document.getElementById('t-grade-filter').innerHTML   = tRenderFilters('t-grade-filter')
+  document.getElementById('t-student-filter').innerHTML = tRenderFilters('t-student-filter')
+  tLoadData()
+}
+
+/* ── TAB SWITCHING ────────────────────────────────────────────── */
+function tShowTab(tab) {
+  teacherState.activeTab = tab
+  ;['progress','students','add'].forEach(t => {
+    document.getElementById('t-tab-'+t).style.display = t===tab ? 'block' : 'none'
+    document.getElementById('ttab-'+t).classList.toggle('active', t===tab)
+  })
+}
+
+/* ── CREATE STUDENT ───────────────────────────────────────────── */
+async function tCreateStudent() {
+  const name     = document.getElementById('new-name').value.trim()
+  const username = document.getElementById('new-username').value.trim()
+  const pin      = document.getElementById('new-pin').value.trim()
+  const grade    = document.getElementById('new-grade').value
+  const classId  = document.getElementById('new-class').value
+  const err      = document.getElementById('new-student-err')
+  const ok       = document.getElementById('new-student-ok')
+  const btn      = document.querySelector('.t-btn-add')
+
+  err.classList.remove('show'); ok.style.display='none'
+  if (!name || !username || !pin) {
+    err.textContent = '⚠ Completa nombre, usuario y PIN'; err.classList.add('show'); return
+  }
+  if (pin.length < 3) {
+    err.textContent = '⚠ PIN mínimo 3 caracteres'; err.classList.add('show'); return
+  }
+
+  btn.disabled = true; btn.textContent = '⏳ Creando…'
+
+  const r = await sbRpc('sb_create_student', {
+    p_teacher_email: teacherState.teacher.email,
+    p_class_id:      classId || null,
+    p_full_name:     name,
+    p_username:      username,
+    p_pin:           pin,
+    p_grade_id:      grade
+  })
+
+  btn.disabled = false; btn.textContent = '➕ Crear estudiante'
+
+  if (!r.success) {
+    err.textContent = '⚠ ' + (r.error || 'Error al crear'); err.classList.add('show'); return
+  }
+
+  // Clear form
+  document.getElementById('new-name').value = ''
+  document.getElementById('new-username').value = ''
+  document.getElementById('new-pin').value = ''
+  ok.style.display = 'block'
+  setTimeout(() => ok.style.display='none', 4000)
+
+  // Refresh data
+  await tLoadData()
+}
+
+/* ── DELETE STUDENT ───────────────────────────────────────────── */
+async function tDeleteStudent(studentId, name) {
+  if (!confirm(`¿Eliminar a ${name}?\n\nEsto borrará todo su progreso. Esta acción no se puede deshacer.`)) return
+  showLoading('Eliminando…', '🗑')
+  const r = await sbRpc('sb_delete_student', {
+    p_teacher_email: teacherState.teacher.email,
+    p_student_id:    studentId
+  })
+  hideLoading()
+  if (!r.success) { alert('Error: ' + r.error); return }
+  await tLoadData()
+}
+
+/* ── MANUAL UNLOCK ────────────────────────────────────────────── */
+async function tUnlockDialog(studentId, name, currentGrade) {
+  const scenarioNum = prompt(`Desbloquear escenario para ${name}.\n\nEscribe el número de escenario (1–8):`)
+  if (!scenarioNum) return
+  const idx = parseInt(scenarioNum) - 1
+  if (isNaN(idx) || idx < 0 || idx > 7) { alert('Número inválido (1–8)'); return }
+
+  showLoading('Desbloqueando…', '🔓')
+  const r = await sbRpc('sb_manual_unlock', {
+    p_teacher_email: teacherState.teacher.email,
+    p_student_id:    studentId,
+    p_grade_id:      currentGrade,
+    p_scenario_idx:  idx
+  })
+  hideLoading()
+  if (!r.success) { alert('Error: ' + r.error); return }
+  alert(`✅ Escenario ${scenarioNum} desbloqueado para ${name}`)
+  await tLoadData()
+}
+
+/* ── OPEN TEACHER DASHBOARD ───────────────────────────────────── */
+async function openTeacherDashboard(teacherData) {
+  saveTeacherSession(teacherData)
+  document.getElementById('t-teacher-name').textContent   = teacherData.name
+  document.getElementById('t-teacher-school').textContent = teacherData.school || 'Dashboard Docente'
+
+  // Render filter chips
+  document.getElementById('t-grade-filter').innerHTML   = tRenderFilters('t-grade-filter')
+  document.getElementById('t-student-filter').innerHTML = tRenderFilters('t-student-filter')
+
+  showView('teacher')
+  tShowTab('progress')
+  await tLoadClasses()
+  await tLoadData()
+}
+
+function teacherLogout() {
+  clearTeacherSession()
+  document.getElementById('login-username').value = ''
+  document.getElementById('login-pin').value = ''
+  document.getElementById('login-step-pin').style.display = 'none'
+  document.getElementById('login-step-user').style.display = 'block'
+  showView('login')
+}
+
+/* ── INIT ─────────────────────────────────────────────────── */
+async function init() {
+  state.progress = loadProgress()
+
+  // Restore saved language preference
+  const savedLang = localStorage.getItem('sb_lang') || 'en'
+  LANG = savedLang
+  document.getElementById('btn-lang-en').classList.toggle('active', savedLang === 'en')
+  document.getElementById('btn-lang-es').classList.toggle('active', savedLang === 'es')
+  document.querySelectorAll('[data-i]').forEach(el => {
+    const key = el.dataset.i
+    if (I18N[LANG][key]) el.textContent = I18N[LANG][key]
+  })
+  updateUnlockView()
+
+  // Add enter-key support for login inputs
+  document.getElementById('login-username').addEventListener('keydown', e => { if (e.key==='Enter') loginStep1() })
+  document.getElementById('login-pin').addEventListener('keydown', e => { if (e.key==='Enter') loginSubmit() })
+
+  // Safety timeout — if nothing loads in 4s, go to login
+  const safetyTimer = setTimeout(() => {
+    console.warn('StudyBuddy: safety timeout — going to login')
+    showView('login')
+  }, 4000)
+
+  setTimeout(async () => {
+    try {
+      const session = loadSession()
+      if (session && session.id) {
+        state.currentUser = session
+
+        // Teacher session
+        const teacherSession = loadTeacherSession()
+        if (teacherSession && teacherSession.email) {
+          teacherState.teacher = teacherSession
+          clearTimeout(safetyTimer)
+          await openTeacherDashboard(teacherSession)
+          return
+        }
+
+        // Student session
+        clearTimeout(safetyTimer)
+        await flushSyncQueue()
+        showHome()
+        if (!session.guest) orbitSay('Welcome back! 👋', '¡Bienvenido de nuevo!')
+      } else {
+        clearTimeout(safetyTimer)
+        showView('login')
+      }
+    } catch (err) {
+      console.error('StudyBuddy init error:', err)
+      clearTimeout(safetyTimer)
+      // Clear bad session and go to login
+      localStorage.removeItem(SB_SESSION_KEY)
+      localStorage.removeItem(TEACHER_SESSION_KEY)
+      showView('login')
+    }
+  }, 1200)
+}
+init()
+
+/* ═══════════════════════════════════════════════════════════════
+   EMBEDDED ACTIVITY CONTENT DATABASE
+   Grades 3-6 full content (Grades 7-12 use slider fallback)
+   ═══════════════════════════════════════════════════════════════ */
+const ACTIVITY_CONTENT = {
+"g4_s1_t1_listening":{"type":"listening","sentences":["My neighborhood has a beautiful park.","The trees in my street are the tallest.","There are colorful flowers near the path.","The school is the best building in my neighborhood.","I love my neighborhood because it is clean and friendly."],"questions":[{"q":"What does the neighborhood have?","opts":["A big mall","A beautiful park","A train station","A beach"],"ans":1},{"q":"What is special about the trees?","opts":["They are colorful","They are very old","They are the tallest","They have flowers"],"ans":2},{"q":"Where are the colorful flowers?","opts":["In the park","Near the path","At the school","On the street"],"ans":1},{"q":"What is the best building?","opts":["The library","The market","The house","The school"],"ans":3},{"q":"Why does the speaker love the neighborhood?","opts":["It has a beach","It is big and noisy","It is clean and friendly","It has many stores"],"ans":2}]},
+"g4_s1_t1_reading":{"type":"reading","text":"My name is Lucia. I live in a wonderful neighborhood. My neighborhood is the best! It has a big park with tall trees and colorful flowers. There is a long path where people walk every morning. The school is the best place because all my friends are there. I like my street because it has beautiful buildings and friendly neighbors. My neighborhood is special because it has everything I need.","questions":[{"q":"What is in Lucia's neighborhood?","opts":["A beach and a mall","A park with tall trees","A lake and mountains","A big airport"],"ans":1},{"q":"What do people do on the path?","opts":["They run races","They sell flowers","They walk every morning","They play football"],"ans":2},{"q":"Why is the school Lucia's favorite?","opts":["It is very big","All her friends are there","It has a pool","It is very new"],"ans":1},{"q":"What makes Lucia's street beautiful?","opts":["Tall mountains","Beautiful buildings and friendly neighbors","Many stores and restaurants","A river nearby"],"ans":1},{"q":"Why is Lucia's neighborhood special?","opts":["It is the biggest","It has everything she needs","It has a famous park","It is very quiet"],"ans":1}]},
+"g4_s1_t1_speaking":{"type":"speaking","tasks":[{"img":"🏫","label":"The School","prompt":"Describe the school using 'the best'","model":"The school is the best place because all my friends are there."},{"img":"🌳","label":"The Park","prompt":"Describe the park using 'the best'","model":"The park is the best because it has tall trees and beautiful flowers."},{"img":"🏘️","label":"The Neighborhood","prompt":"Describe your neighborhood using 'the best'","model":"My neighborhood is the best because it is clean and friendly."}],"criteria":["I used 'the best' in my sentence.","I used 'because' to explain my opinion.","I named a place in the neighborhood."]},
+"g4_s1_t1_writing":{"type":"writing","prompts":[{"prompt":"Write about your favorite place in the neighborhood.","placeholder":"The ___ is the best because...","model":"The park is the best because it has beautiful trees and flowers."},{"prompt":"Write about the best thing in your street.","placeholder":"The best thing in my street is...","model":"The best thing in my street is the big tree because it gives us shade."},{"prompt":"Write about why your neighborhood is special.","placeholder":"My neighborhood is the best because...","model":"My neighborhood is the best because it is clean, friendly, and beautiful."}],"checklist":["I used 'the best' in each sentence.","I used 'because' to explain my idea.","I wrote about a place in the neighborhood.","I wrote complete sentences (subject + verb)."]},
+"g4_s1_t1_mediation":{"type":"mediation","situations":[{"notice":"📋 SCHOOL NOTICE: The park near our school is the best place for our picnic. Please bring a snack!","q":"How do you explain this notice to your classmate?","opts":["The notice says we need to buy something.","The notice says we will have a picnic at the park and we should bring food.","The notice says the park is closed.","The notice says school is cancelled."],"ans":1},{"notice":"📋 NOTICE: Our neighborhood clean-up day is the best event of the year. Join us on Saturday!","q":"What does this notice mean?","opts":["Saturday school is cancelled.","There is a sale on Saturday.","There is a neighborhood clean-up event on Saturday.","We have a test on Saturday."],"ans":2},{"notice":"📋 NOTICE: The school garden has the best flowers this week. Come and see them after class!","q":"What should students do after class?","opts":["Water the flowers at home.","Go to the school garden to see the flowers.","Draw flowers in their notebooks.","Bring flowers to school."],"ans":1},{"notice":"📋 NOTICE: The best student drawings are on display in the hallway. Visit them this week!","q":"Where can students see the drawings?","opts":["In the classroom.","In the library.","In the hallway.","In the garden."],"ans":2}]},
+"g4_s3_t1_listening":{"type":"listening","sentences":["How much is the pineapple?","It costs three dollars.","The papayas are very fresh today.","These bananas are cheap and sweet.","That mango is too expensive."],"questions":[{"q":"What is the question about?","opts":["The color","The size","The price","The taste"],"ans":2},{"q":"How much does the pineapple cost?","opts":["One dollar","Two dollars","Three dollars","Four dollars"],"ans":2},{"q":"How are the papayas today?","opts":["Old","Rotten","Very fresh","Expensive"],"ans":2},{"q":"How are these bananas?","opts":["Expensive and sour","Cheap and sweet","Big and green","Small and old"],"ans":1},{"q":"What about that mango?","opts":["It is cheap","It is fresh","It is too expensive","It is sweet"],"ans":2}]},
+"g4_s3_t1_reading":{"type":"reading","text":"Every Saturday, my mother and I go to the market. It is big and colorful. I love the fruit section! Today I see big pineapples. I ask the vendor, 'How much is the pineapple?' She says, 'It costs three dollars.' That is a good price. The papayas look very fresh and orange. The bananas are cheap today - only one dollar for six! They are sweet and yellow. But that big mango is too expensive. It costs five dollars! We buy the pineapple and bananas. I love shopping at the market.","questions":[{"q":"When do they go to the market?","opts":["Every Sunday","Every Saturday","Every Friday","Every Monday"],"ans":1},{"q":"How much is the pineapple?","opts":["Two dollars","Three dollars","Four dollars","Five dollars"],"ans":1},{"q":"What do the papayas look like?","opts":["Old and brown","Very fresh and orange","Small and green","Rotten"],"ans":1},{"q":"How many bananas for one dollar?","opts":["Three","Four","Five","Six"],"ans":3},{"q":"Why don't they buy the mango?","opts":["It is too small","It is too expensive","It is not fresh","They don't like mangoes"],"ans":1}]},
+"g4_s3_t1_speaking":{"type":"speaking","tasks":[{"img":"🍍","label":"Buying a Pineapple","prompt":"Ask about the price of a pineapple","model":"How much is the pineapple? It costs three dollars."},{"img":"🍌","label":"Cheap Bananas","prompt":"Say how much the bananas cost","model":"These bananas are cheap. They cost one dollar."},{"img":"💰","label":"Expensive Mango","prompt":"Say the mango is too expensive","model":"That mango is too expensive. It costs five dollars!"}],"criteria":["I used 'How much...?' correctly.","I used 'It costs...' or 'They cost...'.","I mentioned prices or described items."]},
+"g4_s3_t1_writing":{"type":"writing","prompts":[{"prompt":"Write a question about price using 'How much'.","placeholder":"How much is ___?","model":"How much is the pineapple?"},{"prompt":"Write an answer about cost using 'It costs'.","placeholder":"It costs ___ dollars.","model":"It costs three dollars."},{"prompt":"Write about buying fruit at the market.","placeholder":"I buy ___ at the market. It costs ___ and it is ___.","model":"I buy bananas at the market. They cost one dollar and they are sweet."}],"checklist":["I used 'How much...?' for questions.","I used 'It costs...' or 'They cost...' for answers.","I used numbers for prices.","I wrote about market shopping."]},
+"g4_s3_t1_mediation":{"type":"mediation","situations":[{"notice":"📋 PRICE TAG: Fresh Pineapple - $3.00 each. Sweet and ripe!","q":"How much is one pineapple?","opts":["One dollar","Two dollars","Three dollars","Five dollars"],"ans":2},{"notice":"📋 SPECIAL OFFER: Bananas - $1.00 for 6. Very sweet!","q":"How many bananas do you get for one dollar?","opts":["Three","Four","Five","Six"],"ans":3},{"notice":"📋 VENDOR SAYS: The papayas are fresh today. They cost two dollars.","q":"How much are the papayas?","opts":["One dollar","Two dollars","Three dollars","Five dollars"],"ans":1},{"notice":"📋 CUSTOMER: That mango is too expensive! I don't want it.","q":"Why doesn't the customer want the mango?","opts":["It is rotten","It is too small","It is too expensive","It is not fresh"],"ans":2}]},
+"g4_s4_t1_listening":{"type":"listening","sentences":["The vessels are big because they carry lots of cargo.","The Panama Canal connects two oceans.","Ships go through locks to go up and down.","The canal is 82 kilometers long.","Engineers built the canal many years ago."],"questions":[{"q":"Why are the vessels big?","opts":["Because they are old","Because they carry lots of cargo","Because they are fast","Because they are small"],"ans":1},{"q":"What does the Panama Canal connect?","opts":["Two rivers","Two lakes","Two oceans","Two mountains"],"ans":2},{"q":"What do ships go through?","opts":["Tunnels","Locks","Bridges","Caves"],"ans":1},{"q":"How long is the canal?","opts":["48 kilometers","82 kilometers","100 kilometers","200 kilometers"],"ans":1},{"q":"Who built the canal?","opts":["Teachers","Doctors","Engineers","Farmers"],"ans":2}]},
+"g4_s4_t1_reading":{"type":"reading","text":"The Panama Canal is famous all over the world. It is an amazing place to visit! Big vessels pass through the canal every day. The vessels are big because they carry lots of cargo from different countries. The canal connects the Atlantic Ocean and the Pacific Ocean. Ships go through special water elevators called locks. The locks go up and down to help ships pass. The canal is 82 kilometers long. Many engineers and workers built it. It opened in 1914. Today, Panama controls the canal. It makes our country very important!","questions":[{"q":"Why is the Panama Canal famous?","opts":["It is very old","It connects two oceans","It is very small","It is in Europe"],"ans":1},{"q":"Why are the vessels big?","opts":["They carry lots of cargo","They are fast","They are new","They are old"],"ans":0},{"q":"What are the water elevators called?","opts":["Doors","Gates","Locks","Windows"],"ans":2},{"q":"When did the canal open?","opts":["1814","1914","2014","1819"],"ans":1},{"q":"Who controls the canal today?","opts":["The United States","France","Panama","Colombia"],"ans":2}]},
+"g4_s4_t1_speaking":{"type":"speaking","tasks":[{"img":"🚢","label":"Big Vessels","prompt":"Say why vessels are big using 'because'","model":"The vessels are big because they carry lots of cargo."},{"img":"🔒","label":"Canal Locks","prompt":"Describe what locks do using 'up and down'","model":"The locks go up and down to help ships pass through the canal."},{"img":"🇵🇦","label":"Panama Canal","prompt":"Say why the canal is important using 'connects'","model":"The Panama Canal is important because it connects two oceans."}],"criteria":["I used 'because' to give a reason.","I used vocabulary about the canal (vessel, lock, cargo).","My sentence is complete and makes sense."]},
+"g4_s4_t1_writing":{"type":"writing","prompts":[{"prompt":"Write why vessels are big using 'because'.","placeholder":"The vessels are big because...","model":"The vessels are big because they carry lots of cargo."},{"prompt":"Write about the Panama Canal using 'connects'.","placeholder":"The Panama Canal connects...","model":"The Panama Canal connects the Atlantic Ocean and the Pacific Ocean."},{"prompt":"Write about locks using 'up and down'.","placeholder":"The locks go ___ and ___ to...","model":"The locks go up and down to help ships pass."}],"checklist":["I used 'because' to explain a reason.","I used canal vocabulary (vessel, lock, cargo, connect).","I wrote about the Panama Canal.","My sentences have correct punctuation."]},
+"g4_s4_t1_mediation":{"type":"mediation","situations":[{"notice":"📋 CANAL FACT: Vessels are big because they carry cargo from around the world.","q":"Why are the vessels big?","opts":["Because they are old","Because they carry cargo","Because they are fast","Because they are small"],"ans":1},{"notice":"📋 VISITOR INFO: The Panama Canal connects the Atlantic and Pacific Oceans.","q":"What does the canal connect?","opts":["Two rivers","Two lakes","Two oceans","Two countries"],"ans":2},{"notice":"📋 LOCK SYSTEM: Ships go up and down in locks to pass through the canal.","q":"How do ships pass through the canal?","opts":["They fly over","They go up and down in locks","They swim under","They walk across"],"ans":1},{"notice":"📋 HISTORY NOTE: Engineers built the canal in 1914. It is 82 kilometers long.","q":"Who built the canal and when?","opts":["Doctors in 1814","Engineers in 1914","Teachers in 2014","Farmers in 1819"],"ans":1}]},
+"g5_s1_t1_listening":{"type":"listening","sentences":["First, I take a piece of paper.","Then, I fold the paper in half.","Next, I cut along the line carefully.","After that, I glue the pieces together.","Finally, I have a beautiful card."],"questions":[{"q":"What do you do first?","opts":["Fold the paper","Cut the paper","Take a piece of paper","Glue the pieces"],"ans":2},{"q":"What do you do after taking the paper?","opts":["Cut it","Glue it","Color it","Fold it"],"ans":3},{"q":"How should you cut the paper?","opts":["Quickly","Carefully","Loudly","Messily"],"ans":1},{"q":"What do you do after cutting?","opts":["Throw it away","Fold it again","Glue the pieces","Draw on it"],"ans":2},{"q":"What do you have at the end?","opts":["A mess","A card","A book","Nothing"],"ans":1}]},
+"g5_s1_t1_reading":{"type":"reading","text":"Today in art class, Miss Laura teaches us how to make a paper flower. First, we need a square piece of colored paper. Then, we fold the paper like an accordion. Next, we cut the ends to make them round. After that, we open the paper carefully. Finally, we glue the ends together to form a flower. My flower is yellow and it looks beautiful! Following instructions helps us create nice things.","questions":[{"q":"What shape of paper do you need first?","opts":["Round","Square","Rectangle","Triangle"],"ans":1},{"q":"How do you fold the paper?","opts":["In half","Like a fan","Like an accordion","In quarters"],"ans":2},{"q":"What do you cut to make them round?","opts":["The middle","The ends","The sides","The corners"],"ans":1},{"q":"What do you do after opening the paper?","opts":["Cut it more","Color it","Glue the ends","Fold it again"],"ans":2},{"q":"What color is the flower?","opts":["Red","Blue","Yellow","Pink"],"ans":2}]},
+"g5_s1_t1_speaking":{"type":"speaking","tasks":[{"img":"✂️","label":"Cutting paper","prompt":"Explain the first step to cut paper.","model":"First, I take the paper and scissors. Then I cut carefully."},{"img":"📄","label":"Folding paper","prompt":"Explain how to fold paper.","model":"I fold the paper in half, then I fold it again."},{"img":"🖼️","label":"Finished craft","prompt":"Describe what you made.","model":"Finally, I have a beautiful paper flower."}],"criteria":["I used first, then, next, finally.","I explained the steps in order.","I described what I made."]},
+"g5_s1_t1_writing":{"type":"writing","prompts":[{"prompt":"Write the steps to cut paper for a craft.","placeholder":"First, I ___. Then, I ___.","model":"First, I take a piece of paper. Then, I cut it into a square."},{"prompt":"Write what you do after cutting.","placeholder":"After cutting, I ___.","model":"After cutting, I fold the paper carefully."},{"prompt":"Write about a craft you made following instructions.","placeholder":"I made a ___. First, I ___. Finally, I ___.","model":"I made a paper flower. First, I cut the paper. Finally, I glued it together."}],"checklist":["I used sequence words.","I wrote steps in order.","I described the final product.","I used imperative verbs."]},
+"g5_s1_t1_mediation":{"type":"mediation","situations":[{"notice":"📋 INSTRUCTIONS: 1. Cut the paper. 2. Fold it. 3. Glue it.","q":"What is the second step?","opts":["Cut the paper","Fold the paper","Glue the paper","Draw on it"],"ans":1},{"notice":"✂️ A child cutting paper with scissors carefully.","q":"What is the child doing?","opts":["Folding","Cutting","Gluing","Drawing"],"ans":1},{"notice":"📄 Paper folded like an accordion.","q":"How was this paper folded?","opts":["In half","In quarters","Like an accordion","Like a triangle"],"ans":2},{"notice":"🌸 A finished paper flower on a desk.","q":"What is this?","opts":["A real flower","A paper flower","A drawing","A bookmark"],"ans":1}]},
+"g6_s1_t1_listening":{"type":"listening","sentences":["We are reporting live from our school's sports day.","There was an exciting race this morning.","The winner said she trained very hard for this moment.","According to the coach, the team will compete next month.","This has been a great day for our school!"],"questions":[{"q":"Where are the reporters?","opts":["At the park","At the school's sports day","At the market","At the library"],"ans":1},{"q":"What happened this morning?","opts":["A concert","A race","A test","A holiday"],"ans":1},{"q":"What did the winner say?","opts":["She was tired","She trained hard","She was lucky","She will quit"],"ans":1},{"q":"Who said the team will compete next month?","opts":["The winner","A student","The coach","The reporter"],"ans":2},{"q":"How was the day described?","opts":["Terrible","Boring","Great","Rainy"],"ans":2}]},
+"g6_s1_t1_reading":{"type":"reading","text":"Our school newspaper, 'The Voice of Students', has a new article about the recent science fair. According to the reporter, Sofia Chen, there were fifteen amazing projects. Students presented experiments about volcanoes, solar energy, and plant growth. The winner, Miguel Torres, created a working model of a recycling system. In an interview, Miguel said, 'I wanted to help the environment with my project.' The judges were impressed by his creativity. The science fair will become an annual event at our school.","questions":[{"q":"What is the name of the school newspaper?","opts":["The Daily News","The Voice of Students","School Times","The Reporter"],"ans":1},{"q":"How many projects were at the science fair?","opts":["Ten","Twelve","Fifteen","Twenty"],"ans":2},{"q":"What did Miguel Torres create?","opts":["A volcano","A solar panel","A recycling system","A plant experiment"],"ans":2},{"q":"What did Miguel say about his project?","opts":["He wanted to win","He wanted to help the environment","He wanted to be famous","He had to do it"],"ans":1},{"q":"How often will the science fair happen now?","opts":["Every month","Every year","Every two years","Never again"],"ans":1}]},
+"g6_s1_t1_speaking":{"type":"speaking","tasks":[{"img":"🎤","label":"Being a reporter","prompt":"Introduce yourself as a school reporter.","model":"Hello, I'm a reporter for our school news. I'm reporting from the library."},{"img":"🏆","label":"Reporting an event","prompt":"Report about a school event that happened.","model":"There was a spelling bee yesterday. Many students participated."},{"img":"🗣️","label":"Interviewing","prompt":"Share what someone said in an interview.","model":"The winner said, 'I studied every day for this competition.'"}],"criteria":["I introduced myself as a reporter.","I reported about a past event.","I shared what someone said."]},
+"g6_s1_t1_writing":{"type":"writing","prompts":[{"prompt":"Write a headline for a school news article.","placeholder":"Headline: ___","model":"Headline: Students Shine at Annual Science Fair"},{"prompt":"Write the first paragraph of a news report.","placeholder":"There was ___ at our school. According to ___, ___ students ___.","model":"There was a talent show at our school. According to the teachers, twenty students performed."},{"prompt":"Write a quote from someone you interviewed.","placeholder":"[Name] said, '___'","model":"Maria said, 'I was nervous but happy when I sang on stage.'"}],"checklist":["I wrote a catchy headline.","I reported about a past event.","I included a quote from someone.","I used past tense correctly."]},
+"g6_s1_t1_mediation":{"type":"mediation","situations":[{"notice":"🎤 A student holding a microphone and interviewing another student.","q":"What is happening?","opts":["A concert","An argument","An interview for school news","A game"],"ans":2},{"notice":"📰 SCHOOL NEWSPAPER: 'Science Fair a Success!'","q":"What is the headline about?","opts":["Sports day","Holiday","Talent show","Science fair"],"ans":3},{"notice":"🗣️ Speech bubble: 'I trained for months to win this race.'","q":"Who probably said this?","opts":["A race winner","A teacher","A reporter","A parent"],"ans":0},{"notice":"📋 ANNOUNCEMENT: School News Team meeting Friday at 3pm in Room 12","q":"When and where is the meeting?","opts":["Thursday 2pm Room 10","Monday 1pm Library","Friday 3pm Room 12","Wednesday 4pm Gym"],"ans":2}]},
+"g3_s1_t1_listening":{"type":"listening","sentences":["I am at school with my friends.","My teacher reads us a story.","I have a blue pencil on my desk.","We learn new words in class.","My friend and I sit together."],"questions":[{"q":"Who is the speaker with?","opts":["Family","Friends","Teacher alone","No one"],"ans":1},{"q":"What does the teacher do?","opts":["Sings a song","Writes on board","Reads a story","Eats lunch"],"ans":2},{"q":"What color is the pencil?","opts":["Red","Green","Yellow","Blue"],"ans":3},{"q":"What do they learn?","opts":["Numbers","New words","Colors","Shapes"],"ans":1},{"q":"Where do the friends sit?","opts":["Far apart","Together","Outside","At home"],"ans":1}]},
+"g3_s1_t1_reading":{"type":"reading","text":"Today is Monday. Carlos is at school. His classroom is yellow and blue. His teacher is Miss Lucia. She is very nice. Carlos has a new backpack. It is red. In his backpack, he has three notebooks and a pencil case. His best friend Ana sits next to him. They like to read books together. School is fun!","questions":[{"q":"What day is it?","opts":["Tuesday","Monday","Friday","Sunday"],"ans":1},{"q":"What color is Carlos's classroom?","opts":["Red and white","Green and yellow","Yellow and blue","Blue and white"],"ans":2},{"q":"What color is Carlos's new backpack?","opts":["Blue","Red","Green","Black"],"ans":1},{"q":"How many notebooks does Carlos have?","opts":["Two","Four","One","Three"],"ans":3},{"q":"Who is Carlos's best friend?","opts":["Luis","Maria","Ana","Jose"],"ans":2}]},
+"g3_s1_t1_speaking":{"type":"speaking","tasks":[{"img":"🎒","label":"My Backpack","prompt":"Say what is in your backpack.","model":"In my backpack, I have books and pencils."},{"img":"👩‍🏫","label":"My Teacher","prompt":"Describe your teacher.","model":"My teacher is Miss Lucia. She is nice."},{"img":"📖","label":"Reading Time","prompt":"Say what you like to read.","model":"I like to read story books with my friend."}],"criteria":["I said what is in my backpack.","I described my teacher.","I said what I like to read."]},
+"g3_s1_t1_writing":{"type":"writing","prompts":[{"prompt":"Write about your school.","placeholder":"My school is ___.","model":"My school is big and has many classrooms."},{"prompt":"Write what you have in your backpack.","placeholder":"In my backpack, I have ___.","model":"In my backpack, I have books, pencils, and a notebook."},{"prompt":"Write about your best friend at school.","placeholder":"My best friend is ___. We like to ___.","model":"My best friend is Ana. We like to read together."}],"checklist":["I wrote about my school.","I wrote what is in my backpack.","I used capital letters for names.","I ended sentences with a period."]},
+"g3_s1_t1_mediation":{"type":"mediation","situations":[{"notice":"🏫 A yellow school building with children playing outside.","q":"What place is this?","opts":["A hospital","A school","A market","A park"],"ans":1},{"notice":"📋 CLASSROOM RULES: 1. Raise your hand. 2. Listen to the teacher. 3. Be kind to friends.","q":"What should you do first?","opts":["Listen to teacher","Be kind","Raise your hand","Talk to friends"],"ans":2},{"notice":"👧 Student says: 'I have a new red pencil.'","q":"What does the student have?","opts":["A new book","A new red pencil","A new backpack","A new friend"],"ans":1},{"notice":"📚 Image: Two children sitting at desks reading books together.","q":"What are the children doing?","opts":["Playing","Eating","Reading together","Writing"],"ans":2}]}
+}
+
+</script>
+</body>
+</html>
